@@ -43,7 +43,7 @@ def validate_medf_document(file_path, schema):
         jsonschema.validate(instance=document, schema=schema)
         return True, None
     except jsonschema.exceptions.ValidationError as e:
-        path = '.'.join(str(p) for p in e.path) if e.path else 'root'
+        path = '.'.join(str(element) for element in e.path) if e.path else 'root'
         return False, f"{e.message}\n  Location: {path}"
     except jsonschema.exceptions.SchemaError as e:
         return False, f"Schema error: {e.message}"

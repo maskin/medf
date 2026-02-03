@@ -129,6 +129,12 @@
             "text": "このセクションは全ステークホルダー向けの概要説明です",
             "author": "Project Manager",
             "timestamp": "2026-02-03T22:00:00Z"
+          },
+          {
+            "type": "note",
+            "text": "スナップショットは1ヶ月間有効。月次レビュー時に新バージョンを作成する予定",
+            "author": "Project Manager",
+            "timestamp": "2026-02-03T22:00:00Z"
           }
         ]
       },
