@@ -1,0 +1,195 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/medf-v0.2-public.schema.json",
+  "title": "MeDF Public Document v0.2",
+  "description": "MeDF format for public documents (official announcements, guidelines, reports)",
+  "type": "object",
+  "required": ["medf_version", "document_type", "id", "snapshot", "hash", "authority", "content"],
+  "properties": {
+    "medf_version": {
+      "type": "string",
+      "pattern": "^0\\.2$",
+      "description": "MeDF format version"
+    },
+    "document_type": {
+      "type": "string",
+      "enum": ["public_notice", "guideline", "press_release", "report", "white_paper", "official_statement"],
+      "description": "Type of public document"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9-]+@[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:Z|[+-][0-9]{2}:[0-9]{2})$",
+      "description": "Document identifier in ID@timestamp format (e.g., JP-MLIT-2026-GUIDE-001@2026-02-04T10:00:00Z)"
+    },
+    "snapshot": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Snapshot timestamp in ISO 8601 format (must match timestamp in id)"
+    },
+    "hash": {
+      "type": "object",
+      "required": ["algorithm", "value"],
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": ["sha-256", "sha-384", "sha-512"],
+          "description": "Hash algorithm used"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^[a-f0-9]+$",
+          "description": "Hash value in hexadecimal format"
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Authority name (e.g., 観光庁,国土交通省)"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}-[A-Z0-9]+$",
+          "description": "Organization code (e.g., JP-MLIT)"
+        },
+        "department": {
+          "type": "string",
+          "description": "Department or division"
+        }
+      }
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Main content in Markdown format with fenced block extensions"
+    },
+    "signature": {
+      "type": "object",
+      "required": ["algorithm", "value", "signer"],
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": ["ES256", "ES384", "ES512", "RS256", "RS384", "RS512"],
+          "description": "JWS signature algorithm"
+        },
+        "value": {
+          "type": "string",
+          "description": "JWS signature value (Compact Serialization)"
+        },
+        "signer": {
+          "type": "string",
+          "description": "DID or certificate identifier of the signer"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Signature timestamp"
+        }
+      }
+    },
+    "index": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Document title"
+        },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "short": {
+              "type": "string",
+              "maxLength": 200,
+              "description": "One-line summary"
+            },
+            "medium": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "2-3 lines summary"
+            },
+            "full": {
+              "type": "string",
+              "description": "Detailed summary"
+            }
+          }
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "title", "level"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+              },
+              "title": {
+                "type": "string"
+              },
+              "level": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 6
+              },
+              "role": {
+                "type": "string",
+                "enum": ["executive_summary", "introduction", "background", "policy", "conclusion"],
+                "description": "Semantic role of the section"
+              },
+              "summary": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["uri", "type"],
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "uri"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["source", "related", "citation", "supplement"]
+          },
+          "title": {
+            "type": "string"
+          },
+          "retrieved": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "medf_id": {
+            "type": "string",
+            "description": "MeDF ID if referencing another MeDF document"
+          }
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Custom extension fields (not included in hash calculation)"
+    }
+  }
+}
