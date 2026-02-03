@@ -1,0 +1,392 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://medf.org/schema/v1.0",
+  "title": "MeDF Document Schema",
+  "description": "Schema for Meta/Modular e-Document Format (MeDF) v1.0",
+  "type": "object",
+  "required": ["medf", "metadata", "content"],
+  "properties": {
+    "medf": {
+      "type": "object",
+      "required": ["version", "schema"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$",
+          "description": "MeDF format version"
+        },
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the JSON schema"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["id", "title", "type", "status", "created", "authors", "language"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique document identifier"
+        },
+        "title": {
+          "type": "string",
+          "description": "Document title"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["report", "specification", "snapshot", "analysis", "other"],
+          "description": "Document type"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "review", "official", "archived"],
+          "description": "Document status"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp (ISO 8601)"
+        },
+        "modified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modification timestamp (ISO 8601)"
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Expiration timestamp (ISO 8601)"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Semantic version (Major.Minor.Patch)"
+        },
+        "previousVersion": {
+          "type": "string",
+          "description": "ID of the previous version"
+        },
+        "authors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "role"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "enum": ["creator", "contributor", "reviewer"]
+              },
+              "contact": {
+                "type": "string",
+                "format": "email"
+              }
+            }
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Keywords and tags"
+        },
+        "language": {
+          "type": "string",
+          "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+          "description": "Language code (ISO 639-1)"
+        },
+        "security": {
+          "type": "object",
+          "properties": {
+            "classification": {
+              "type": "string",
+              "enum": ["public", "internal", "confidential", "secret"]
+            },
+            "accessControl": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "custom": {
+          "type": "object",
+          "description": "Custom metadata fields"
+        }
+      }
+    },
+    "index": {
+      "type": "object",
+      "description": "Document index and navigation structure",
+      "properties": {
+        "toc": {
+          "type": "array",
+          "description": "Table of contents",
+          "items": {
+            "$ref": "#/definitions/tocItem"
+          }
+        },
+        "keywords": {
+          "type": "array",
+          "description": "Indexed keywords",
+          "items": {
+            "type": "object",
+            "required": ["term"],
+            "properties": {
+              "term": {
+                "type": "string"
+              },
+              "frequency": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "contexts": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "definition": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "entities": {
+          "type": "array",
+          "description": "Named entities",
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["person", "organization", "technology", "location", "concept", "other"]
+              },
+              "mentions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "relationships": {
+          "type": "array",
+          "description": "Relationships between sections",
+          "items": {
+            "type": "object",
+            "required": ["source", "target", "type"],
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["references", "depends-on", "contradicts", "extends", "supports"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "content": {
+      "type": "object",
+      "required": ["sections"],
+      "properties": {
+        "sections": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/section"
+          }
+        }
+      }
+    },
+    "references": {
+      "type": "object",
+      "description": "External and internal references",
+      "properties": {
+        "external": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "type", "title"],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["document", "api", "dataset", "repository", "website", "other"]
+              },
+              "title": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "version": {
+                "type": "string"
+              },
+              "accessed": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "checksum": {
+                "type": "string",
+                "pattern": "^(md5|sha1|sha256):[a-f0-9]+$"
+              },
+              "status": {
+                "type": "string",
+                "enum": ["active", "deprecated", "unavailable"]
+              }
+            }
+          }
+        },
+        "internal": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "sourceSection", "targetSection"],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "sourceSection": {
+                "type": "string"
+              },
+              "targetSection": {
+                "type": "string"
+              },
+              "relationship": {
+                "type": "string",
+                "enum": ["supports", "contradicts", "extends", "references"]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "tocItem": {
+      "type": "object",
+      "required": ["id", "title", "level"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Section identifier"
+        },
+        "title": {
+          "type": "string",
+          "description": "Section title"
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Heading level"
+        },
+        "summary": {
+          "type": "string",
+          "description": "Section summary"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/tocItem"
+          }
+        }
+      }
+    },
+    "section": {
+      "type": "object",
+      "required": ["id", "title", "type", "body"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique section identifier"
+        },
+        "title": {
+          "type": "string",
+          "description": "Section title"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["text", "code", "data", "image", "table", "mixed"],
+          "description": "Content type"
+        },
+        "body": {
+          "description": "Actual content (string or structured data)",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "importance": {
+              "type": "string",
+              "enum": ["high", "medium", "low"]
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "lastVerified": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "annotations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "text"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["note", "warning", "question", "todo", "info"]
+              },
+              "text": {
+                "type": "string"
+              },
+              "author": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

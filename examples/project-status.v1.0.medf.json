@@ -1,0 +1,271 @@
+{
+  "medf": {
+    "version": "1.0",
+    "schema": "https://medf.org/schema/v1.0"
+  },
+  "metadata": {
+    "id": "medf-project-snapshot-2026-02-03",
+    "title": "MeDF Project Status Snapshot - February 2026",
+    "type": "snapshot",
+    "status": "official",
+    "created": "2026-02-03T23:00:00Z",
+    "modified": "2026-02-03T23:00:00Z",
+    "validUntil": "2026-03-03T23:00:00Z",
+    "version": "1.0.0",
+    "authors": [
+      {
+        "name": "MeDF Development Team",
+        "role": "creator",
+        "contact": "dev@medf.org"
+      }
+    ],
+    "tags": ["MeDF", "project-status", "AI-document", "specification"],
+    "language": "ja",
+    "security": {
+      "classification": "public",
+      "accessControl": []
+    }
+  },
+  "index": {
+    "toc": [
+      {
+        "id": "section-overview",
+        "title": "プロジェクト概要",
+        "level": 1,
+        "summary": "MeDFプロジェクトの目的と現在の状況"
+      },
+      {
+        "id": "section-progress",
+        "title": "進捗状況",
+        "level": 1,
+        "summary": "各マイルストーンの達成状況",
+        "children": [
+          {
+            "id": "section-progress-spec",
+            "title": "仕様策定",
+            "level": 2,
+            "summary": "フォーマット仕様の定義状況"
+          },
+          {
+            "id": "section-progress-impl",
+            "title": "実装",
+            "level": 2,
+            "summary": "ツールとライブラリの開発状況"
+          }
+        ]
+      },
+      {
+        "id": "section-decisions",
+        "title": "主要な決定事項",
+        "level": 1,
+        "summary": "プロジェクトで行われた重要な技術的決定"
+      }
+    ],
+    "keywords": [
+      {
+        "term": "MeDF",
+        "frequency": 12,
+        "contexts": ["section-overview", "section-progress", "section-decisions"],
+        "definition": "Meta/Modular e-Document Format - AI時代に最適化されたドキュメントフォーマット"
+      },
+      {
+        "term": "JSON",
+        "frequency": 5,
+        "contexts": ["section-progress-spec", "section-decisions"],
+        "definition": "MeDFの基本フォーマットとして採用"
+      },
+      {
+        "term": "インデックス",
+        "frequency": 8,
+        "contexts": ["section-overview", "section-progress-spec"],
+        "definition": "ドキュメントの構造化された目次と索引"
+      }
+    ],
+    "entities": [
+      {
+        "name": "PDF",
+        "type": "technology",
+        "mentions": ["section-overview"]
+      },
+      {
+        "name": "JSON Schema",
+        "type": "technology",
+        "mentions": ["section-progress-spec", "section-decisions"]
+      },
+      {
+        "name": "AI",
+        "type": "concept",
+        "mentions": ["section-overview", "section-progress"]
+      }
+    ],
+    "relationships": [
+      {
+        "source": "section-progress-spec",
+        "target": "section-decisions",
+        "type": "supports"
+      },
+      {
+        "source": "section-progress-impl",
+        "target": "section-progress-spec",
+        "type": "depends-on"
+      }
+    ]
+  },
+  "content": {
+    "sections": [
+      {
+        "id": "section-overview",
+        "title": "プロジェクト概要",
+        "type": "text",
+        "body": "MeDF（Meta/Modular e-Document Format）は、AI時代に最適化された新しいドキュメントフォーマットです。PDFの制約（紙前提、固定レイアウト、重量化）を克服し、以下の特徴を実現します：\n\n1. 情報の全体像把握（インデックス性）\n2. スナップショットとしての公式性\n3. 分散管理された原本との整合性\n\n本ドキュメントは、2026年2月3日時点でのプロジェクト状態のスナップショットです。",
+        "metadata": {
+          "importance": "high",
+          "confidence": 1.0,
+          "lastVerified": "2026-02-03T23:00:00Z"
+        },
+        "annotations": [
+          {
+            "type": "info",
+            "text": "このセクションは全ステークホルダー向けの概要説明です",
+            "author": "Project Manager",
+            "timestamp": "2026-02-03T22:00:00Z"
+          }
+        ]
+      },
+      {
+        "id": "section-progress",
+        "title": "進捗状況",
+        "type": "text",
+        "body": "プロジェクトは以下のマイルストーンで進行中です。",
+        "metadata": {
+          "importance": "high",
+          "confidence": 0.95,
+          "lastVerified": "2026-02-03T23:00:00Z"
+        }
+      },
+      {
+        "id": "section-progress-spec",
+        "title": "仕様策定",
+        "type": "data",
+        "body": {
+          "status": "完了",
+          "completionDate": "2026-02-03",
+          "deliverables": [
+            {
+              "name": "SPECIFICATION.md",
+              "status": "完了",
+              "description": "MeDFフォーマットの完全な仕様書"
+            },
+            {
+              "name": "schema.json",
+              "status": "完了",
+              "description": "JSON Schema定義ファイル"
+            }
+          ],
+          "nextSteps": [
+            "コミュニティフィードバックの収集",
+            "バージョン1.1への改善提案の検討"
+          ]
+        },
+        "metadata": {
+          "importance": "high",
+          "confidence": 1.0,
+          "lastVerified": "2026-02-03T23:00:00Z"
+        }
+      },
+      {
+        "id": "section-progress-impl",
+        "title": "実装",
+        "type": "data",
+        "body": {
+          "status": "進行中",
+          "progress": 30,
+          "components": [
+            {
+              "name": "バリデーター",
+              "status": "計画中",
+              "priority": "高"
+            },
+            {
+              "name": "変換ツール（MD → MeDF）",
+              "status": "計画中",
+              "priority": "中"
+            },
+            {
+              "name": "ビューア",
+              "status": "計画中",
+              "priority": "中"
+            }
+          ]
+        },
+        "metadata": {
+          "importance": "high",
+          "confidence": 0.8,
+          "lastVerified": "2026-02-03T23:00:00Z"
+        },
+        "annotations": [
+          {
+            "type": "todo",
+            "text": "次の2週間で優先順位を再評価",
+            "author": "Tech Lead",
+            "timestamp": "2026-02-03T22:30:00Z"
+          }
+        ]
+      },
+      {
+        "id": "section-decisions",
+        "title": "主要な決定事項",
+        "type": "text",
+        "body": "プロジェクトで行われた重要な技術的決定：\n\n## 1. JSONフォーマットの採用\n\n**決定**：MeDFの基本フォーマットとしてJSONを採用\n\n**理由**：\n- 広く普及している標準フォーマット\n- プログラミング言語を問わず容易にパース可能\n- JSON Schemaによる検証が可能\n- 人間が読むことも可能（可読性あり）\n\n**代替案**：\n- XML：冗長性が高く、ファイルサイズが大きくなる\n- YAML：構造の厳密性に欠ける、パーサーの実装品質にばらつき\n- Protocol Buffers：バイナリ形式で人間が読めない\n\n## 2. セマンティックバージョニング\n\n**決定**：ドキュメントバージョンにセマンティックバージョニング（Major.Minor.Patch）を採用\n\n**理由**：\n- 変更の影響範囲を明確に示せる\n- 互換性の判断が容易\n- 広く普及している標準\n\n## 3. インデックスの多次元化\n\n**決定**：目次（TOC）、キーワード、エンティティ、関係性の4軸でインデックス化\n\n**理由**：\n- AIによる多角的な分析を支援\n- 異なるユースケースに対応（検索、要約、関連性抽出など）\n- 人間の理解も促進",
+        "metadata": {
+          "importance": "high",
+          "confidence": 1.0,
+          "lastVerified": "2026-02-03T23:00:00Z"
+        },
+        "annotations": [
+          {
+            "type": "note",
+            "text": "これらの決定は今後のバージョンでも維持される予定",
+            "author": "Architecture Team",
+            "timestamp": "2026-02-03T21:00:00Z"
+          }
+        ]
+      }
+    ]
+  },
+  "references": {
+    "external": [
+      {
+        "id": "ref-json-schema",
+        "type": "website",
+        "title": "JSON Schema Specification",
+        "url": "https://json-schema.org/",
+        "version": "draft-07",
+        "accessed": "2026-02-03T20:00:00Z",
+        "status": "active"
+      },
+      {
+        "id": "ref-semver",
+        "type": "website",
+        "title": "Semantic Versioning 2.0.0",
+        "url": "https://semver.org/",
+        "accessed": "2026-02-03T20:00:00Z",
+        "status": "active"
+      }
+    ],
+    "internal": [
+      {
+        "id": "int-ref-1",
+        "sourceSection": "section-progress-impl",
+        "targetSection": "section-progress-spec",
+        "relationship": "depends-on"
+      },
+      {
+        "id": "int-ref-2",
+        "sourceSection": "section-decisions",
+        "targetSection": "section-progress-spec",
+        "relationship": "supports"
+      }
+    ]
+  }
+}
