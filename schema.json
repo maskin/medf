@@ -276,7 +276,7 @@
               },
               "relationship": {
                 "type": "string",
-                "enum": ["supports", "contradicts", "extends", "references"]
+                "enum": ["supports", "contradicts", "extends", "references", "depends-on"]
               }
             }
           }
