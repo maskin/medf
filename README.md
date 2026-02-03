@@ -63,7 +63,9 @@ pip install markdown jsonschema
 python cli/medf.py convert input.md output.medf \
   --id "JP-MLIT-2026-GUIDE-001@2026-02-04T10:00:00Z" \
   --authority "国土交通省" \
+  --issuer "JP-MLIT" \
   --type guideline \
+  --language ja \
   --version 0.2
 ```
 
@@ -71,9 +73,12 @@ python cli/medf.py convert input.md output.medf \
 
 - `--id`: Document ID (required, use ID@timestamp format for v0.2)
 - `--authority`: Authority name or JSON object with name, code, department
+- `--issuer`: Issuer organization code (e.g., JP-MLIT)
 - `--type`: Document type (public_notice, guideline, press_release, report, white_paper, official_statement)
 - `--version`: MeDF version (0.1 or 0.2, default: 0.2)
 - `--snapshot`: Snapshot timestamp (ISO 8601, auto-generated if not provided)
+- `--issued-at`: Issuance timestamp (ISO 8601)
+- `--language`: Language code (e.g., ja, en, default: ja)
 - `--reference`: Reference URI (can be used multiple times)
 
 ### Validate MeDF File

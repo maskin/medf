@@ -89,7 +89,10 @@ class MeDFConverter:
         document_type: str = "public_notice",
         references: Optional[List[Dict[str, str]]] = None,
         extensions: Optional[Dict[str, Any]] = None,
-        version: str = "0.2"
+        version: str = "0.2",
+        issuer: Optional[str] = None,
+        issued_at: Optional[str] = None,
+        language: str = "ja"
     ) -> None:
         """Convert Markdown file to MeDF format."""
         with open(input_path, 'r', encoding='utf-8') as f:
@@ -98,6 +101,10 @@ class MeDFConverter:
         # Generate snapshot timestamp if not provided
         if not snapshot:
             snapshot = datetime.now(timezone.utc).isoformat()
+
+        # Use snapshot as issued_at if not provided
+        if not issued_at:
+            issued_at = snapshot
 
         # Extract metadata
         metadata = self.extract_metadata(content)
@@ -120,6 +127,13 @@ class MeDFConverter:
                 'sections': sections
             }
         }
+
+        # Add v0.2 specific fields
+        if version == "0.2":
+            medf['issued_at'] = issued_at
+            medf['language'] = language
+            if issuer:
+                medf['issuer'] = issuer
 
         # Add optional fields
         if references:
@@ -145,6 +159,9 @@ class MeDFConverter:
         print(f"  Type: {document_type}")
         print(f"  ID: {doc_id}")
         print(f"  Authority: {authority_obj.get('name', authority)}")
+        if issuer:
+            print(f"  Issuer: {issuer}")
+        print(f"  Language: {language}")
         print(f"  Hash: {hash_value[:16]}...")
 
     def _calculate_hash(self, medf: Dict[str, Any]) -> str:
@@ -334,8 +351,11 @@ def main():
     convert_parser.add_argument('--id', required=True, help='Document ID (e.g., JP-MLIT-2026-GUIDE-001@2026-02-04T10:00:00Z)')
     convert_parser.add_argument('--authority', required=True, help='Authority name (or JSON object with name, code, department)')
     convert_parser.add_argument('--snapshot', help='Snapshot timestamp (ISO 8601)')
+    convert_parser.add_argument('--issued-at', help='Issuance timestamp (ISO 8601)')
     convert_parser.add_argument('--type', default='public_notice', choices=['public_notice', 'guideline', 'press_release', 'report', 'white_paper', 'official_statement'], help='Document type')
     convert_parser.add_argument('--version', default='0.2', choices=['0.1', '0.2'], help='MeDF version')
+    convert_parser.add_argument('--issuer', help='Issuer organization code (e.g., JP-MLIT)')
+    convert_parser.add_argument('--language', default='ja', help='Language code (e.g., ja, en)')
     convert_parser.add_argument('--reference', action='append', help='Reference URI (can be used multiple times)')
 
     # validate command
@@ -377,7 +397,10 @@ def main():
             snapshot=args.snapshot,
             document_type=args.type,
             references=references,
-            version=args.version
+            version=args.version,
+            issuer=getattr(args, 'issuer', None),
+            issued_at=getattr(args, 'issued_at', None),
+            language=getattr(args, 'language', 'ja')
         )
 
     elif args.command == 'validate':
