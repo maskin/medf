@@ -552,6 +552,16 @@ def main():
     verify_parser.add_argument('file', type=Path, help='MeDF file')
     verify_parser.add_argument('--version', default='0.2', choices=['0.1', '0.2'], help='MeDF version for schema validation')
 
+    # init command (minimal v0.1)
+    init_parser = subparsers.add_parser('init', help='Initialize MeDF tracking for a file')
+    init_parser.add_argument('file', type=Path, help='File to track')
+
+    # commit command (minimal v0.1)
+    commit_parser = subparsers.add_parser('commit', help='Commit file with intent')
+    commit_parser.add_argument('file', type=Path, help='File to commit')
+    commit_parser.add_argument('--author', help='Author name')
+    commit_parser.add_argument('--intent', required=True, help='Intent description')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -606,6 +616,14 @@ def main():
         calculated_hash = hashlib.sha256(canonical.encode('utf-8')).hexdigest()
 
         print(f"Hash: {calculated_hash}")
+
+    elif args.command == 'init':
+        minimal = MeDFMinimal()
+        minimal.init(args.file)
+
+    elif args.command == 'commit':
+        minimal = MeDFMinimal()
+        minimal.commit(args.file, intent=args.intent, author=getattr(args, 'author', None))
 
     elif args.command == 'verify':
         validator = MeDFValidator(version=args.version)
