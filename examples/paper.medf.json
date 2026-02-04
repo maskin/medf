@@ -1,0 +1,33 @@
+{
+  "medf_version": "0.2.1",
+  "id": "paper-2026-example",
+  "snapshot": "2026-02-05T10:00:00Z",
+  "issuer": "example-author",
+  "blocks": [
+    {
+      "block_id": "abstract",
+      "role": "abstract",
+      "format": "markdown",
+      "text": "This paper proposes MEDF as a document state format.",
+      "block_hash": "9761e7fbde68d2c7c8c570d50947c85001a688ed0b66a27700a543a02c7611b2"
+    },
+    {
+      "block_id": "methodology",
+      "role": "methodology",
+      "format": "markdown",
+      "text": "We define documents as immutable block states.",
+      "block_hash": "a134835ee0dbe9589a72a72b871f1f43a476958a7214be2992ce7817ff69a387"
+    },
+    {
+      "block_id": "discussion",
+      "role": "discussion",
+      "format": "markdown",
+      "text": "MEDF does not judge correctness.",
+      "block_hash": "8c8de11932ef6843dd3c151519409127ea6767f1b51c8dfd7cace1c506201e3f"
+    }
+  ],
+  "doc_hash": {
+    "algorithm": "sha-256",
+    "value": "5ea7e5389301df85c6a2b71c779ef5d38e5fb1619b006e38212bc7b9b690b8a7"
+  }
+}

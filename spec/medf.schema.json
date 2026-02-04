@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medf.example/schema/medf-0.2.1.json",
+  "title": "MEDF Document v0.2.1",
+  "type": "object",
+  "required": ["medf_version", "id", "snapshot", "issuer", "blocks"],
+  "properties": {
+    "medf_version": {
+      "type": "string",
+      "enum": ["0.2.1"]
+    },
+    "id": {
+      "type": "string"
+    },
+    "snapshot": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "issuer": {
+      "type": "string"
+    },
+    "blocks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/block"
+      }
+    },
+    "doc_hash": {
+      "$ref": "#/$defs/hash"
+    },
+    "signature": {
+      "$ref": "#/$defs/signature"
+    },
+    "index": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "block": {
+      "type": "object",
+      "required": ["block_id", "role", "format", "text"],
+      "properties": {
+        "block_id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "block_hash": {
+          "$ref": "#/$defs/hashValue"
+        }
+      },
+      "additionalProperties": false
+    },
+    "hash": {
+      "type": "object",
+      "required": ["algorithm", "value"],
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/hashValue"
+        }
+      }
+    },
+    "hashValue": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "signature": {
+      "type": "object",
+      "required": ["algorithm", "value", "public_key", "signed_at"],
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "public_key": {
+          "type": "string"
+        },
+        "signed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "signer": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
