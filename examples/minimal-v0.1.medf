@@ -1,0 +1,15 @@
+{
+  "medf_version": "0.1",
+  "document": {
+    "title": "example document",
+    "content_hash": "sha256:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "content_type": "text/markdown",
+    "source": "local:file.md"
+  },
+  "intent": {
+    "author": "string",
+    "description": "why this document exists"
+  },
+  "timestamp": "2026-02-05T12:00:00Z",
+  "previous": null
+}

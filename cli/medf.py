@@ -340,6 +340,181 @@ class MeDFHTMLConverter:
         print(f"✓ Created HTML file: {output_path}")
 
 
+class MeDFMinimal:
+    """Minimal MeDF v0.1 operations with Git-like interface."""
+
+    def __init__(self):
+        pass
+
+    def _calculate_file_hash(self, file_path: Path) -> str:
+        """Calculate SHA-256 hash of a file."""
+        sha256 = hashlib.sha256()
+        with open(file_path, 'rb') as f:
+            for chunk in iter(lambda: f.read(4096), b''):
+                sha256.update(chunk)
+        return f"sha256:{sha256.hexdigest()}"
+
+    def init(self, file_path: Path) -> None:
+        """Initialize a new MeDF file for tracking."""
+        if not file_path.exists():
+            print(f"✗ File does not exist: {file_path}")
+            return
+
+        # Calculate content hash
+        content_hash = self._calculate_file_hash(file_path)
+
+        # Get title from first line or filename
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                first_line = f.readline().strip()
+                title = first_line.lstrip('#').strip() if first_line.startswith('#') else file_path.stem
+        except:
+            title = file_path.stem
+
+        # Get content type
+        content_type = {
+            '.md': 'text/markdown',
+            '.txt': 'text/plain',
+            '.html': 'text/html',
+            '.json': 'application/json',
+            '.pdf': 'application/pdf'
+        }.get(file_path.suffix, 'application/octet-stream')
+
+        # Create minimal MeDF structure
+        medf = {
+            "medf_version": "0.1",
+            "document": {
+                "title": title,
+                "content_hash": content_hash,
+                "content_type": content_type,
+                "source": f"local:{file_path}"
+            },
+            "intent": {
+                "author": "",
+                "description": ""
+            },
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "previous": None
+        }
+
+        # Write to .medf.json file
+        medf_file = file_path.parent / f"{file_path.name}.medf.json"
+        with open(medf_file, 'w', encoding='utf-8') as f:
+            json.dump(medf, f, ensure_ascii=False, indent=2)
+
+        print(f"✓ Initialized MeDF tracking: {medf_file}")
+        print(f"  Content hash: {content_hash}")
+        print(f"  Use 'medf commit {file_path.name} --intent \"...\"' to set intent")
+
+    def commit(self, file_path: Path, intent: str, author: Optional[str] = None) -> None:
+        """Create a new MeDF commit for a file."""
+        if not file_path.exists():
+            print(f"✗ File does not exist: {file_path}")
+            return
+
+        # Calculate content hash
+        content_hash = self._calculate_file_hash(file_path)
+
+        # Get title from first line or filename
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                first_line = f.readline().strip()
+                title = first_line.lstrip('#').strip() if first_line.startswith('#') else file_path.stem
+        except:
+            title = file_path.stem
+
+        # Get content type
+        content_type = {
+            '.md': 'text/markdown',
+            '.txt': 'text/plain',
+            '.html': 'text/html',
+            '.json': 'application/json',
+            '.pdf': 'application/pdf'
+        }.get(file_path.suffix, 'application/octet-stream')
+
+        # Check for previous version
+        medf_file = file_path.parent / f"{file_path.name}.medf.json"
+        previous_hash = None
+
+        if medf_file.exists():
+            try:
+                with open(medf_file, 'r', encoding='utf-8') as f:
+                    old_medf = json.load(f)
+                    previous_hash = old_medf.get('document', {}).get('content_hash')
+            except:
+                pass
+
+        # Create new MeDF structure
+        medf = {
+            "medf_version": "0.1",
+            "document": {
+                "title": title,
+                "content_hash": content_hash,
+                "content_type": content_type,
+                "source": f"local:{file_path}"
+            },
+            "intent": {
+                "author": author or "",
+                "description": intent
+            },
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "previous": previous_hash
+        }
+
+        # Write to .medf.json file
+        with open(medf_file, 'w', encoding='utf-8') as f:
+            json.dump(medf, f, ensure_ascii=False, indent=2)
+
+        print(f"✓ Committed: {medf_file}")
+        print(f"  Content hash: {content_hash}")
+        if previous_hash:
+            print(f"  Previous: {previous_hash[:40]}...")
+        else:
+            print(f"  Initial commit")
+
+    def verify(self, medf_file: Path) -> bool:
+        """Verify MeDF file integrity."""
+        if not medf_file.exists():
+            print(f"✗ MeDF file does not exist: {medf_file}")
+            return False
+
+        try:
+            with open(medf_file, 'r', encoding='utf-8') as f:
+                medf = json.load(f)
+
+            # Get source file path
+            source = medf.get('document', {}).get('source', '')
+            if not source.startswith('local:'):
+                print(f"⚠ Remote sources not supported for verification")
+                return False
+
+            source_path = medf_file.parent / source.replace('local:', '')
+
+            if not source_path.exists():
+                print(f"✗ Source file does not exist: {source_path}")
+                return False
+
+            # Calculate actual hash
+            actual_hash = self._calculate_file_hash(source_path)
+            expected_hash = medf.get('document', {}).get('content_hash', '')
+
+            if actual_hash == expected_hash:
+                print(f"✓ {medf_file} is valid")
+                print(f"  Source: {source_path}")
+                print(f"  Hash: {actual_hash}")
+                print(f"  Intent: {medf.get('intent', {}).get('description', '')}")
+                return True
+            else:
+                print(f"✗ Hash mismatch!")
+                print(f"  Expected: {expected_hash}")
+                print(f"  Actual: {actual_hash}")
+                return False
+
+        except Exception as e:
+            print(f"✗ Error: {e}")
+            return False
+
+
 def main():
     parser = argparse.ArgumentParser(description='MeDF CLI Tool')
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
