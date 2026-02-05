@@ -125,6 +125,47 @@ with existing cryptographic tooling.
 
 ---
 
+## Continuous Integration
+
+MEDF documents in this repository are automatically verified by GitHub Actions:
+
+```yaml
+name: MEDF Verify
+on:
+  push:
+    paths:
+      - "**/*.medf.json"
+```
+
+This ensures that any MEDF document pushed to the repository is automatically verified for integrity.
+
+---
+
+## MEDF Diff
+
+MEDF can diff documents at semantic block level, not just line-based text diffs.
+
+```bash
+medf diff v1.medf.json v2.medf.json
+```
+
+Output:
+```
+Block changed: policy
+- Previous hash: sha256:ab12...
++ New hash:      sha256:ff98...
+
+Block unchanged: executive_summary
+Block added: appendix
+```
+
+JSON output for CI/automation:
+```bash
+medf diff v1.medf.json v2.medf.json --json
+```
+
+---
+
 ## Citation Format
 
 ```

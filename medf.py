@@ -383,6 +383,79 @@ def cmd_explain():
     print("="*60)
 
 
+def cmd_diff(old_path: Path, new_path: Path, json_output: bool = False):
+    """
+    Diff two MEDF documents at semantic block level.
+
+    Git diff is line-based.
+    MEDF diff is block-based.
+    """
+    old_doc = json.loads(old_path.read_text(encoding="utf-8"))
+    new_doc = json.loads(new_path.read_text(encoding="utf-8"))
+
+    old_blocks = {b["block_id"]: b for b in old_doc.get("blocks", [])}
+    new_blocks = {b["block_id"]: b for b in new_doc.get("blocks", [])}
+
+    all_block_ids = set(old_blocks.keys()) | set(new_blocks.keys())
+
+    changed = []
+    unchanged = []
+    added = []
+    removed = []
+
+    for block_id in sorted(all_block_ids):
+        if block_id in old_blocks and block_id in new_blocks:
+            old_hash = old_blocks[block_id].get("block_hash")
+            new_hash = new_blocks[block_id].get("block_hash")
+
+            if old_hash and new_hash:
+                if old_hash != new_hash:
+                    changed.append({
+                        "block_id": block_id,
+                        "before": old_hash,
+                        "after": new_hash
+                    })
+                else:
+                    unchanged.append(block_id)
+            elif not old_hash and not new_hash:
+                unchanged.append(block_id)
+        elif block_id in old_blocks and block_id not in new_blocks:
+            removed.append(block_id)
+        elif block_id not in old_blocks and block_id in new_blocks:
+            added.append(block_id)
+
+    if json_output:
+        result = {
+            "changed": changed,
+            "unchanged": unchanged,
+            "added": added,
+            "removed": removed
+        }
+        print(json.dumps(result, indent=2))
+    else:
+        if changed:
+            for item in changed:
+                print(f"Block changed: {item['block_id']}")
+                print(f"- Previous hash: {item['before'][:16]}...")
+                print(f"+ New hash:      {item['after'][:16]}...")
+                print()
+
+        if unchanged:
+            for block_id in unchanged:
+                print(f"Block unchanged: {block_id}")
+
+        if added:
+            for block_id in added:
+                print(f"Block added: {block_id}")
+
+        if removed:
+            for block_id in removed:
+                print(f"Block removed: {block_id}")
+
+        if not (changed or added or removed):
+            print("No changes detected.")
+
+
 def print_usage():
     """Print usage information"""
     print("medf — A CLI tool to package, hash, sign, and verify documents")
@@ -397,6 +470,7 @@ def print_usage():
     print("COMMANDS:")
     print("  init        Initialize a MEDF document skeleton")
     print("  pack        Generate hashes for blocks and the document")
+    print("  diff        Diff two MEDF documents at block level")
     print("  sign        Attach a cryptographic signature to the document hash")
     print("  verify      Verify hashes and signatures")
     print("  explain     Explain what MEDF verification means")
@@ -418,6 +492,7 @@ def print_usage():
     print("EXAMPLES:")
     print("  medf init > document.medf.json")
     print("  medf pack document.medf.json")
+    print("  medf diff v1.medf.json v2.medf.json")
     print("  medf verify document.medf.json")
     print("  medf verify document.medf.json --explain")
     print("  medf verify document.medf.json --json")
@@ -496,6 +571,20 @@ def main():
         cmd_sign(path, key_path)
     elif cmd == "explain":
         cmd_explain()
+    elif cmd == "diff":
+        if len(sys.argv) < 4:
+            print("usage: medf diff <old.medf.json> <new.medf.json> [--json]")
+            return
+        old_path = Path(sys.argv[2])
+        new_path = Path(sys.argv[3])
+        if not old_path.exists():
+            print(f"[Error] File not found: {old_path}")
+            return
+        if not new_path.exists():
+            print(f"[Error] File not found: {new_path}")
+            return
+        json_output = "--json" in sys.argv
+        cmd_diff(old_path, new_path, json_output=json_output)
     else:
         print(f"[Error] Unknown command: {cmd}")
         print()

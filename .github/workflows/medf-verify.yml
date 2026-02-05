@@ -1,0 +1,24 @@
+name: MEDF Verify
+
+on:
+  push:
+    paths:
+      - "**/*.medf.json"
+  pull_request:
+    paths:
+      - "**/*.medf.json"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run MEDF verify
+        run: |
+          python3 medf.py verify examples/*.medf.json
