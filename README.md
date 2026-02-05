@@ -80,7 +80,7 @@ MEDF: paper-2026-example#methodology
 
 ## Philosophy
 
-**Core Principles** (see [思想.md](思想.md) for full philosophy):
+**Core Principles** (see [PHILOSOPHY.md](PHILOSOPHY.md) / [思想.md](思想.md)):
 
 1. **Does not judge correctness** - MeDF does not determine truth, evaluate content, grant authority, or decide superiority
 2. **Records "when/who/intent existed"** - Not "is this correct?" but "when/who/with what intent did this exist?"
@@ -103,6 +103,14 @@ A: We don't authenticate. We only fix state. Signatures show "who fixed," not co
 
 **Q: Wouldn't central management be more convenient?**
 A: We prioritize resilience over convenience. Central servers are single points of failure. Offline operation is essential for long-term document preservation.
+
+### AI-Generated Documents
+
+**Position**: MeDF provides verifiable document state regardless of creation method (AI or human).
+
+> "The problem is not 'AI wrote this' — the essence is 'provenance and responsibility cannot be verified'"
+
+See [docs/ai-generated-documents.md](docs/ai-generated-documents.en.md) for complete position statement on AI-generated documents.
 
 ---
 
@@ -136,8 +144,8 @@ python3 medf.py sign document.medf.json --key private.key
 
 ## Specification
 
-- **Philosophy**: [PHILOSOPHY.md](PHILOSOPHY.md) (English) / [思想.md](思想.md) (日本語)
-- **AI-Generated Documents**: [docs/ai-generated-documents.md](docs/ai-generated-documents.en.md) (English) / [docs/ai-generated-documents.md](docs/ai-generated-documents.md) (日本語)
+- **Philosophy**: [PHILOSOPHY.md](PHILOSOPHY.md) / [思想.md](思想.md)
+- **AI-Generated Documents**: [docs/ai-generated-documents.md](docs/ai-generated-documents.en.md) / [docs/ai-generated-documents.md](docs/ai-generated-documents.md)
 - **Schema**: [spec/medf.schema.json](spec/medf.schema.json)
 - **Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
 - **License**: [LICENSE](LICENSE)

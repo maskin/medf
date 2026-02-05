@@ -1,5 +1,11 @@
 # MeDF Position on AI-Generated Documents
 
+> **The problem with AI documents is not "AI wrote this"**
+> **The essence is "provenance and responsibility cannot be verified"**
+> **MeDF fixes "when, who, and with what intent"**
+
+---
+
 ## 1. Background: Why AI-Generated Documents Are Problematic
 
 The proliferation of generative AI has brought several challenges to light:
@@ -51,36 +57,7 @@ Whether AI-generated or human-generated,
 
 ---
 
-## 4. Where Is AI Usage Recorded?
-
-In MeDF, AI usage is treated as **optional metadata**.
-
-Example:
-
-```json
-"provenance": {
-  "created_by": "human",
-  "assisted_by": [
-    {
-      "type": "ai",
-      "model": "gpt-4",
-      "role": "drafting"
-    }
-  ]
-}
-```
-
-Important points:
-
-* This information **can be recorded for transparency**
-* But is **not required for verification**
-* Presence or absence does not affect document validity
-
-MeDF is not an "AI confession format."
-
----
-
-## 5. Why Not Rely on Watermarks or AI Detection?
+## 4. Why Not Rely on Watermarks or AI Detection?
 
 AI detection and watermarking technologies have structural limitations:
 
@@ -94,7 +71,7 @@ establishing trust through **document structure and cryptographic verification.*
 
 ---
 
-## 6. Use Cases
+## 5. Use Cases
 
 ### Government and Official Documents
 
@@ -113,7 +90,7 @@ establishing trust through **document structure and cryptographic verification.*
 
 ---
 
-## 7. MeDF's Answer
+## 6. MeDF's Answer
 
 > **AI-generated documents are not dangerous.**
 > **Dangerous documents are those that cannot be verified.**
@@ -123,7 +100,39 @@ for documents in the AI era at the format level.
 
 ---
 
-## 8. One-Line Summary
+## 7. One-Line Summary
 
 **MeDF is not a mechanism to stop AI —**
 **it is a mechanism that keeps documents trustworthy even in the AI era.**
+
+---
+
+## Appendix: provenance (Optional Extension)
+
+AI usage recording is optional but can be documented for transparency.
+
+**Important**: This is **optional metadata** only and does not affect document validity or verification results.
+
+### Example
+
+```json
+"provenance": {
+  "created_by": "human",
+  "assisted_by": [
+    {
+      "type": "ai",
+      "model": "gpt-4",
+      "role": "drafting"
+    }
+  ]
+}
+```
+
+### Positioning
+
+* ✅ **Can be recorded for transparency**
+* ✅ **Useful as reference for provenance tracking**
+* ❌ **Not required for verification**
+* ❌ **Presence or absence does not affect validity**
+
+MeDF is not an "AI confession format" — it is, first and foremost, **a format for fixing document state**.
