@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 """
-MeDF MVP Implementation
-python3.10+
+medf — A CLI tool to package, hash, sign, and verify documents
+       in Mutable Expression Description Format (MEDF).
 
-Usage:
-    python3 medf.py init
-    python3 medf.py hash file.medf.json
-    python3 medf.py verify file.medf.json
-    python3 medf.py sign file.medf.json --key private.key
+MEDF helps you make documents verifiable.
+It does not decide what is correct, official, or authoritative.
 """
 
 import json
@@ -22,6 +19,9 @@ try:
     HAS_NACL = True
 except ImportError:
     HAS_NACL = False
+
+# Version
+VERSION = "0.2.1"
 
 
 def canonical_json(obj) -> bytes:
@@ -51,7 +51,10 @@ def sha256_hex(data: bytes) -> str:
 
 
 def cmd_init():
-    """Initialize a new MeDF document template"""
+    """
+    Initialize a MEDF document skeleton.
+    No existing content is modified.
+    """
     doc = {
         "medf_version": "0.2.1",
         "id": "example-doc",
@@ -69,8 +72,14 @@ def cmd_init():
     print(json.dumps(doc, indent=2, ensure_ascii=False))
 
 
-def cmd_hash(path: Path):
-    """Calculate hashes for blocks and document"""
+def cmd_pack(path: Path):
+    """
+    Generate hashes for all blocks and the document.
+
+    This command creates a verifiable snapshot.
+    It does NOT freeze your workflow.
+    You can always create a new version by repacking.
+    """
     doc = json.loads(path.read_text(encoding="utf-8"))
 
     # Calculate block_hash
@@ -99,12 +108,22 @@ def cmd_hash(path: Path):
         encoding="utf-8"
     )
 
+    print(f"[OK] Hashes generated: {path}")
+    print(f"  Blocks: {len(doc['blocks'])}")
+    print(f"  Document hash: {doc['doc_hash']['value'][:16]}...")
 
-def cmd_verify(path: Path):
-    """Verify document integrity"""
+
+def cmd_verify(path: Path, explain: bool = False):
+    """
+    Verify block hashes, document hash, and signature.
+
+    Verification checks integrity and consistency.
+    Trust decisions are not evaluated.
+    """
     doc = json.loads(path.read_text(encoding="utf-8"))
 
     # Verify blocks
+    all_blocks_valid = True
     for block in doc.get("blocks", []):
         expected = block.get("block_hash")
         if not expected:
@@ -118,10 +137,12 @@ def cmd_verify(path: Path):
         }
         actual = sha256_hex(canonical_json(block_src))
         if expected != actual:
-            print(f"[NG] block {block['block_id']}")
-            print(f"  Expected: {expected}")
-            print(f"  Actual: {actual}")
-            return
+            print(f"[NG] Block hash mismatch (block_id: {block['block_id']})")
+            print(f"  The document content has been altered.")
+            all_blocks_valid = False
+
+    if not all_blocks_valid:
+        return
 
     # Verify document hash
     if "doc_hash" not in doc:
@@ -135,16 +156,62 @@ def cmd_verify(path: Path):
     }
     actual = sha256_hex(canonical_json(doc_src))
     if expected != actual:
-        print("[NG] document hash")
-        print(f"  Expected: {expected}")
-        print(f"  Actual: {actual}")
+        print("[NG] Document hash mismatch")
+        print(f"  The document structure has been altered.")
         return
 
-    print("[OK] verified")
+    # Verify signature (if present)
+    signature_valid = None
+    if "signature" in doc:
+        if not HAS_NACL:
+            print("[Warning] Signature present but PyNaCl not installed")
+            print("  Install: pip install pynacl")
+            signature_valid = "skipped"
+        else:
+            try:
+                sig = doc["signature"]
+                public_key = VerifyKey(sig["public_key"].encode("utf-8"))
+                hash_value = doc["doc_hash"]["value"].encode("utf-8")
+                public_key.verify(hash_value, sig["value"].encode("utf-8"))
+                signature_valid = True
+            except Exception as e:
+                signature_valid = False
+                print(f"[NG] Signature verification failed: {e}")
+                return
+
+    # Success output
+    print("✔ Document hash matches")
+    print("✔ Block hashes match")
+
+    if signature_valid is True:
+        print("✔ Signature is cryptographically valid")
+    elif signature_valid == "skipped":
+        print("⚠ Signature verification skipped (PyNaCl not installed)")
+
+    print("\nTrust decision: not evaluated")
+
+    if explain:
+        print("\n" + "="*60)
+        print("MEDF verification means:")
+        print("- The text content has not been altered")
+        print("- The document structure matches the signed hash")
+        if signature_valid is True:
+            print("- The signature is cryptographically valid")
+
+        print("\nMEDF verification does NOT mean:")
+        print("- The signer is authoritative")
+        print("- The content is correct")
+        print("- The document should be trusted")
+
+        print("\n" + "="*60)
 
 
 def cmd_sign(path: Path, key_path: Path):
-    """Sign document with private key"""
+    """
+    Attach a cryptographic signature to the document hash.
+
+    A signature proves integrity, not authority.
+    """
     if not HAS_NACL:
         print("[Error] PyNaCl is required for signing")
         print("Install: pip install pynacl")
@@ -162,7 +229,7 @@ def cmd_sign(path: Path, key_path: Path):
     # Sign doc_hash.value
     if "doc_hash" not in doc:
         print("[Error] No doc_hash found to sign")
-        print("Run 'medf hash' first")
+        print("Run 'medf pack' first")
         sys.exit(1)
 
     hash_value = doc["doc_hash"]["value"]
@@ -188,47 +255,145 @@ def cmd_sign(path: Path, key_path: Path):
         encoding="utf-8"
     )
 
-    print(f"[OK] signed: {path}")
+    print(f"[OK] Signature attached: {path}")
     print(f"  Algorithm: ed25519")
     print(f"  Signer: {doc['signature']['public_key'][:40]}...")
 
 
+def cmd_explain():
+    """
+    Explain what MEDF verification guarantees.
+
+    MEDF verification means:
+    - The text content has not been altered
+    - The document structure matches the signed hash
+    - The signature is cryptographically valid
+
+    MEDF verification does NOT mean:
+    - The signer is authoritative
+    - The content is correct
+    - The document should be trusted
+    """
+    print("="*60)
+    print("What MEDF Verification Means")
+    print("="*60)
+    print()
+    print("MEDF verification means:")
+    print("✓ The text content has not been altered")
+    print("✓ The document structure matches the signed hash")
+    print("✓ The signature is cryptographically valid (if present)")
+    print()
+    print("MEDF verification does NOT mean:")
+    print("✗ The signer is authoritative")
+    print("✗ The content is correct")
+    print("✗ The document should be trusted")
+    print()
+    print("Key principles:")
+    print("• Text content is immutable once published")
+    print("• Presentation (rendering, indexing) is mutable")
+    print("• All hashing uses RFC 8785 (JSON Canonicalization Scheme)")
+    print("• MEDF does not define trust authorities or key ownership")
+    print()
+    print("For more information:")
+    print("• Philosophy: see PHILOSOPHY.md")
+    print("• Trust anchors: see docs/trust.md")
+    print("="*60)
+
+
+def print_usage():
+    """Print usage information"""
+    print("medf — A CLI tool to package, hash, sign, and verify documents")
+    print("       in Mutable Expression Description Format (MEDF).")
+    print()
+    print("MEDF helps you make documents verifiable.")
+    print("It does not decide what is correct, official, or authoritative.")
+    print()
+    print("USAGE:")
+    print("  medf <command> [options]")
+    print()
+    print("COMMANDS:")
+    print("  init        Initialize a MEDF document skeleton")
+    print("  pack        Generate hashes for blocks and the document")
+    print("  sign        Attach a cryptographic signature to the document hash")
+    print("  verify      Verify hashes and signatures")
+    print("  explain     Explain what MEDF verification means")
+    print()
+    print("GLOBAL OPTIONS:")
+    print("  --help      Show this help message")
+    print("  --version   Show version information")
+    print()
+    print("NOTES:")
+    print("  • Text content in MEDF blocks is immutable once published.")
+    print("  • Presentation (rendering, indexing, layout) is mutable.")
+    print("  • All hashing and signing uses RFC 8785 (JSON Canonicalization Scheme).")
+    print("  • MEDF does not define trust authorities or key ownership.")
+    print()
+    print("EXAMPLES:")
+    print("  medf init > document.medf.json")
+    print("  medf pack document.medf.json")
+    print("  medf verify document.medf.json")
+    print("  medf sign document.medf.json --key private.key")
+    print("  medf explain")
+    print()
+    print("For more information:")
+    print("  https://github.com/maskin/medf")
+
+
 def main():
     if len(sys.argv) < 2:
-        print("usage: medf init|hash|verify|sign [file] [options]")
-        print("")
-        print("Commands:")
-        print("  init                    Show template document")
-        print("  hash <file>             Calculate hashes")
-        print("  verify <file>           Verify document integrity")
-        print("  sign <file> --key <key>  Sign document")
+        print_usage()
+        return
+
+    # Handle --version and --help
+    if sys.argv[1] in ["--version", "-v"]:
+        print(f"medf {VERSION}")
+        print()
+        print("MEDF adopts RFC 8785 (JSON Canonicalization Scheme) for all hashing.")
+        print("See: https://www.rfc-editor.org/rfc/rfc8785.html")
+        return
+
+    if sys.argv[1] in ["--help", "-h"]:
+        print_usage()
         return
 
     cmd = sys.argv[1]
 
     if cmd == "init":
         cmd_init()
+    elif cmd == "pack":
+        if len(sys.argv) < 3:
+            print("usage: medf pack <document.medf>")
+            return
+        path = Path(sys.argv[2])
+        if not path.exists():
+            print(f"[Error] File not found: {path}")
+            return
+        cmd_pack(path)
     elif cmd == "hash":
+        # Legacy support for old 'hash' command
         if len(sys.argv) < 3:
-            print("usage: medf hash <file>")
+            print("Note: 'hash' command is deprecated. Use 'pack' instead.")
+            print("usage: medf pack <document.medf>")
             return
+        print("[Warning] 'hash' command is deprecated. Use 'pack' instead.")
         path = Path(sys.argv[2])
         if not path.exists():
             print(f"[Error] File not found: {path}")
             return
-        cmd_hash(path)
+        cmd_pack(path)
     elif cmd == "verify":
+        explain = "--explain" in sys.argv
         if len(sys.argv) < 3:
-            print("usage: medf verify <file>")
+            print("usage: medf verify <document.medf> [--explain]")
             return
         path = Path(sys.argv[2])
         if not path.exists():
             print(f"[Error] File not found: {path}")
             return
-        cmd_verify(path)
+        cmd_verify(path, explain=explain)
     elif cmd == "sign":
         if len(sys.argv) < 4:
-            print("usage: medf sign <file> --key <private_key>")
+            print("usage: medf sign <document.medf> --key <private-key>")
             return
         path = Path(sys.argv[2])
         key_path = Path(sys.argv[4])
@@ -239,8 +404,12 @@ def main():
             print(f"[Error] Key file not found: {key_path}")
             return
         cmd_sign(path, key_path)
+    elif cmd == "explain":
+        cmd_explain()
     else:
         print(f"[Error] Unknown command: {cmd}")
+        print()
+        print("Run 'medf --help' for usage information.")
 
 
 if __name__ == "__main__":

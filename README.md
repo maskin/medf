@@ -1,13 +1,13 @@
-# MeDF
+# MeDF — Mutable Expression Description Format
 
-**Mutable Expression Description Format**
+MEDF is a document format designed to make text verifiable
+while allowing flexible presentation and reuse.
 
-MeDF stands for **Mutable Expression Description Format**.
+Text content is immutable.
+Expression, layout, indexing, and interpretation are mutable.
 
-A document format where canonical meaning is fixed,
-while expressions remain mutable.
-
-> "Records *when, who, and with what intent* a document existed"
+MEDF focuses on integrity and referenceability —
+not authority, correctness, or trust.
 
 ---
 
@@ -24,35 +24,33 @@ MeDF is not a system for preserving or distributing documents themselves. It is 
 
 ---
 
-## Immutability and Mutability
+## Design Principles
 
-In MEDF, the textual content of each block is immutable.
-Once published, the text itself MUST NOT be altered without creating a new version.
-
-What is mutable is the presentation layer:
-rendering, layout, indexing, metadata views, and references MAY evolve
-without invalidating the original content.
-
-In short:
-- **Text is immutable.**
-- **Presentation is mutable.**
+- **Block-based immutable text**
+- **RFC 8785 JSON Canonicalization**
+- **Hash-first, signature-optional**
+- **Offline verification by design**
+- **Trust and authority are out of scope**
 
 ---
 
 ## Quick Start
 
 ```bash
-# Show template
-python3 medf.py init
+# Initialize document
+python3 medf.py init > document.medf.json
 
-# Calculate hashes
-python3 medf.py hash document.medf.json
+# Generate hashes
+python3 medf.py pack document.medf.json
 
 # Verify integrity
 python3 medf.py verify document.medf.json
 
 # Sign (optional)
 python3 medf.py sign document.medf.json --key private.key
+
+# Explain verification
+python3 medf.py explain
 ```
 
 ---
@@ -173,14 +171,18 @@ Reference implementations may demonstrate practical trust anchors.
 ## CLI Reference
 
 ```bash
-# Show template
-python3 medf.py init
+# Initialize document
+python3 medf.py init > document.medf.json
 
-# Calculate hashes
-python3 medf.py hash document.medf.json
+# Generate hashes
+python3 medf.py pack document.medf.json
 
 # Verify document integrity
 python3 medf.py verify document.medf.json
+
+# Explain verification
+python3 medf.py verify document.medf.json --explain
+python3 medf.py explain
 
 # Sign document (optional)
 python3 medf.py sign document.medf.json --key private.key
