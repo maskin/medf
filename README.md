@@ -1,41 +1,43 @@
 # MeDF
 
-**Mutable Expression Description Format** - 文書の状態を固定するためのフォーマット
+**Mutable Expression Description Format** - A format to fix document states, not to judge correctness or authority.
 
-> 「これは *いつ・誰が・どの意図で* 存在したか」を固定する
-
----
-
-## 概要
-
-MeDFは、文書そのものを保存・配布するための仕組みではなく、**「ある文書が、ある意図のもとで、その時点に存在した」という状態の記述**を行うためのフォーマットです。
-
-- ✅ **存在の記録** - いつ・誰が・どの意図で
-- ✅ **状態の固定** - ハッシュによる不変性
-- ✅ **オフラインファースト** - 中央サーバ不要
-- ❌ **正しさの証明** - 真偽判定はしない
+> "Records *when, who, and with what intent* a document existed"
 
 ---
 
-## クイックスタート
+## Overview
+
+MeDF is not a system for preserving or distributing documents themselves. It is a format for **describing the state** that "a document existed at a certain point in time, with certain intent."
+
+- ✅ **Records existence** - when, who, and intent
+- ✅ **Fixes state** - immutability through hashing
+- ✅ **Offline-first** - no central servers required
+- ❌ **Does not prove correctness** - no truth judgment
+
+**Works fully offline and does not require trust, servers, or blockchains.**
+
+---
+
+## Quick Start
 
 ```bash
-# テンプレート表示
-python3 cli/medf.py init
+# Show template
+python3 medf.py init
 
-# ハッシュ計算
-python3 cli/medf.py hash document.medf.json
+# Calculate hashes
+python3 medf.py hash document.medf.json
 
-# 検証
-python3 cli/medf.py verify document.medf.json
+# Verify integrity
+python3 medf.py verify document.medf.json
 
-# 署名（オプション）
-python3 cli/medf.py sign document.medf.json --key private.key
+# Sign (optional)
+python3 medf.py sign document.medf.json --key private.key
 ```
 
 ---
 
-## 構造
+## Structure
 
 ```json
 {
@@ -59,75 +61,103 @@ python3 cli/medf.py sign document.medf.json --key private.key
 }
 ```
 
-- **blocks** - 最小意味単位
-- **block_hash** - 各ブロックのハッシュ
-- **doc_hash** - 文書全体のハッシュ
+- **blocks** - Minimal semantic units
+- **block_hash** - Hash for each block
+- **doc_hash** - Hash for entire document
 
 ---
 
-## 引用形式
+## Citation Format
 
 ```
 MEDF: paper-2026-example#methodology
 ```
 
-- `paper-2026-example` - 文書ID
-- `#methodology` - ブロックID
+- `paper-2026-example` - Document ID
+- `#methodology` - Block ID
 
 ---
 
-## CLI
+## Philosophy
+
+**Core Principles** (see [思想.md](思想.md) for full philosophy):
+
+1. **Does not judge correctness** - MeDF does not determine truth, evaluate content, grant authority, or decide superiority
+2. **Records "when/who/intent existed"** - Not "is this correct?" but "when/who/with what intent did this exist?"
+3. **Hash as responsibility boundary** - Hash proves "unchanged from this state," not trust or legitimacy
+4. **History as chains** - Each state linked by `previous`, branching allowed, no "official" history
+5. **Offline-first** - No network, central servers, or external APIs required
+6. **JSON as compromise** - Human-readable, machine-processable, CLI-generatable, future-convertible
+7. **No forced trust** - Records "who fixed this," not "this is trustworthy"
+
+### Q&A (Philosophy Defense)
+
+**Q: Is this blockchain?**
+A: No. No consensus or distribution required. MeDF is a state description format; distributed consensus is optional.
+
+**Q: Can't I trust this?**
+A: We operate on a no-trust premise. Trustworthiness is an external concern. MeDF records "what existed."
+
+**Q: Weak authentication?**
+A: We don't authenticate. We only fix state. Signatures show "who fixed," not content correctness.
+
+**Q: Wouldn't central management be more convenient?**
+A: We prioritize resilience over convenience. Central servers are single points of failure. Offline operation is essential for long-term document preservation.
+
+---
+
+## Use Cases
+
+- **Academic papers**: Section-level reference (`MEDF: paper-2026-xyz#methodology`)
+- **Public documents**: Revision history tracking
+- **Impersonation prevention**: Proving "same person" through key continuity
+- **Signing**: Claim of "I fixed this" (not trust)
+
+---
+
+## CLI Reference
 
 ```bash
-# テンプレート表示
-python3 cli/medf.py init
+# Show template
+python3 medf.py init
 
-# ハッシュ計算
-python3 cli/medf.py hash document.medf.json
+# Calculate hashes
+python3 medf.py hash document.medf.json
 
-# 検証
-python3 cli/medf.py verify document.medf.json
+# Verify document integrity
+python3 medf.py verify document.medf.json
 
-# 署名（オプション）
-python3 cli/medf.py sign document.medf.json --key private.key
+# Sign document (optional)
+python3 medf.py sign document.medf.json --key private.key
 ```
 
 ---
 
-## 仕様・思想
+## Specification
 
-- **思想文書**: [思想.md](思想.md)
-- **仕様**: [spec/medf.schema.json](spec/medf.schema.json)
-- **貢献ガイド**: [CONTRIBUTING.md](CONTRIBUTING.md)
-- **ライセンス**: [LICENSE](LICENSE)
-
----
-
-## ユースケース
-
-- **論文**: セクション単位の参照 (`MEDF: paper-2026-xyz#methodology`)
-- **公的文書**: 改定履歴の記録
-- **偽アカウント防止**: 鍵の継続性で「同一人物」を証明
-- **署名**: 「私が固定した」という主張（信頼ではない）
+- **Philosophy**: [思想.md](思想.md) (Japanese)
+- **Schema**: [spec/medf.schema.json](spec/medf.schema.json)
+- **Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
+- **License**: [LICENSE](LICENSE)
 
 ---
 
-## ライセンス
+## License
 
 MIT License - [LICENSE](LICENSE)
 
-**「信頼を強制しない」「中央管理しない」「フォークを恐れない」** - MeDF思想と完全一致
+**"No forced trust | No central control | No fork fear"** - Fully aligned with MeDF philosophy
 
 ---
 
-## 関連プロジェクト
+## Related
 
-- **v0.2**: 公的文書仕様（JSON埋め込み型）
-- **v0.1**: 最小構造（外部参照型）
+- **v0.2**: Public document specification (JSON-embedded)
+- **v0.1**: Minimal structure (external reference)
 
 ---
 
 ## Links
 
 - GitHub: https://github.com/maskin/medf
-- スキーマ: [spec/medf.schema.json](spec/medf.schema.json)
+- Schema: [spec/medf.schema.json](spec/medf.schema.json)
