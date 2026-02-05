@@ -268,24 +268,24 @@ def cmd_verify(path: Path, explain: bool = False, json_output: bool = False):
             print("  Trust decision: not applicable")
 
         if explain:
-        print()
-        print("="*60)
-        if has_signature and signature_valid is True:
-            print("This MEDF document is verifiable because:")
-            print("- Each content block matches its recorded hash")
-            print("- The document hash matches the signed value")
-            print("- The signature matches the embedded public key")
-        else:
-            print("This MEDF document is verifiable because:")
-            print("- Each content block matches its recorded hash")
-            print("- The document hash is computable and reproducible")
+            print()
+            print("="*60)
+            if has_signature and signature_valid is True:
+                print("This MEDF document is verifiable because:")
+                print("- Each content block matches its recorded hash")
+                print("- The document hash matches the signed value")
+                print("- The signature matches the embedded public key")
+            else:
+                print("This MEDF document is verifiable because:")
+                print("- Each content block matches its recorded hash")
+                print("- The document hash is computable and reproducible")
 
-        print()
-        print("This verification does NOT evaluate:")
-        print("- Who owns the signing key" if has_signature else "- Key ownership or authority")
-        print("- Whether the signer is authoritative" if has_signature else "- Content authorship")
-        print("- Whether the content is correct")
-        print("="*60)
+            print()
+            print("This verification does NOT evaluate:")
+            print("- Who owns the signing key" if has_signature else "- Key ownership or authority")
+            print("- Whether the signer is authoritative" if has_signature else "- Content authorship")
+            print("- Whether the content is correct")
+            print("="*60)
 
 
 
