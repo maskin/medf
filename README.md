@@ -135,7 +135,7 @@ python3 medf.py sign document.medf.json --key private.key
 
 ## Specification
 
-- **Philosophy**: [思想.md](思想.md) (Japanese)
+- **Philosophy**: [PHILOSOPHY.md](PHILOSOPHY.md) (English) / [思想.md](思想.md) (日本語)
 - **Schema**: [spec/medf.schema.json](spec/medf.schema.json)
 - **Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
 - **License**: [LICENSE](LICENSE)
