@@ -123,7 +123,7 @@ def cmd_verify(path: Path, explain: bool = False):
     doc = json.loads(path.read_text(encoding="utf-8"))
 
     # Verify blocks
-    all_blocks_valid = True
+    failed_block = None
     for block in doc.get("blocks", []):
         expected = block.get("block_hash")
         if not expected:
@@ -137,16 +137,27 @@ def cmd_verify(path: Path, explain: bool = False):
         }
         actual = sha256_hex(canonical_json(block_src))
         if expected != actual:
-            print(f"[NG] Block hash mismatch (block_id: {block['block_id']})")
-            print(f"  The document content has been altered.")
-            all_blocks_valid = False
+            failed_block = {
+                "block_id": block["block_id"],
+                "expected": expected,
+                "actual": actual
+            }
+            break
 
-    if not all_blocks_valid:
+    if failed_block:
+        print("✖ Block hash mismatch")
+        print()
+        print("Details:")
+        print(f"  block_id: {failed_block['block_id']}")
+        print(f"  expected: sha256:{failed_block['expected'][:16]}...")
+        print(f"  actual:   sha256:{failed_block['actual'][:16]}...")
+        print()
+        print("The text content of this block has been altered.")
         return
 
     # Verify document hash
     if "doc_hash" not in doc:
-        print("[NG] No doc_hash found")
+        print("✖ No document hash found")
         return
 
     expected = doc["doc_hash"]["value"]
@@ -156,16 +167,17 @@ def cmd_verify(path: Path, explain: bool = False):
     }
     actual = sha256_hex(canonical_json(doc_src))
     if expected != actual:
-        print("[NG] Document hash mismatch")
-        print(f"  The document structure has been altered.")
+        print("✖ Document hash mismatch")
+        print()
+        print("The document structure has been altered.")
         return
 
     # Verify signature (if present)
+    has_signature = "signature" in doc
     signature_valid = None
-    if "signature" in doc:
+
+    if has_signature:
         if not HAS_NACL:
-            print("[Warning] Signature present but PyNaCl not installed")
-            print("  Install: pip install pynacl")
             signature_valid = "skipped"
         else:
             try:
@@ -174,36 +186,57 @@ def cmd_verify(path: Path, explain: bool = False):
                 hash_value = doc["doc_hash"]["value"].encode("utf-8")
                 public_key.verify(hash_value, sig["value"].encode("utf-8"))
                 signature_valid = True
-            except Exception as e:
-                signature_valid = False
-                print(f"[NG] Signature verification failed: {e}")
+            except Exception:
+                print("✖ Signature verification failed")
+                print()
+                print("The signature does not match the document hash.")
                 return
 
     # Success output
     print("✔ Document hash matches")
-    print("✔ Block hashes match")
+    print("✔ All block hashes match")
 
-    if signature_valid is True:
+    if has_signature and signature_valid is True:
         print("✔ Signature is cryptographically valid")
-    elif signature_valid == "skipped":
-        print("⚠ Signature verification skipped (PyNaCl not installed)")
-
-    print("\nTrust decision: not evaluated")
+        print()
+        print("Summary:")
+        print("  Integrity: verified")
+        print("  Reproducibility: verified")
+        print("  Trust decision: not evaluated")
+    elif has_signature and signature_valid == "skipped":
+        print("⚠ Signature present (PyNaCl not installed)")
+        print()
+        print("Summary:")
+        print("  Integrity: verified")
+        print("  Signature: present (not verified)")
+        print("  Trust decision: not evaluated")
+    else:
+        print()
+        print("Summary:")
+        print("  Integrity: verified")
+        print("  Signature: not present")
+        print("  Trust decision: not applicable")
 
     if explain:
-        print("\n" + "="*60)
-        print("MEDF verification means:")
-        print("- The text content has not been altered")
-        print("- The document structure matches the signed hash")
-        if signature_valid is True:
-            print("- The signature is cryptographically valid")
+        print()
+        print("="*60)
+        if has_signature and signature_valid is True:
+            print("This MEDF document is verifiable because:")
+            print("- Each content block matches its recorded hash")
+            print("- The document hash matches the signed value")
+            print("- The signature matches the embedded public key")
+        else:
+            print("This MEDF document is verifiable because:")
+            print("- Each content block matches its recorded hash")
+            print("- The document hash is computable and reproducible")
 
-        print("\nMEDF verification does NOT mean:")
-        print("- The signer is authoritative")
-        print("- The content is correct")
-        print("- The document should be trusted")
+        print()
+        print("This verification does NOT evaluate:")
+        print("- Who owns the signing key" if has_signature else "- Key ownership or authority")
+        print("- Whether the signer is authoritative" if has_signature else "- Content authorship")
+        print("- Whether the content is correct")
+        print("="*60)
 
-        print("\n" + "="*60)
 
 
 def cmd_sign(path: Path, key_path: Path):

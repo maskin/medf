@@ -145,6 +145,27 @@ See [docs/ai-generated-documents.md](docs/ai-generated-documents.en.md) for comp
 
 ---
 
+## What MEDF is NOT
+
+MEDF is **NOT**:
+- A blockchain
+- A trust or identity system
+- A certificate authority
+- A content moderation tool
+- A way to decide what is true or official
+
+MEDF does **NOT**:
+- Judge correctness of content
+- Decide who should be trusted
+- Prevent publishing false information
+
+MEDF **ONLY**:
+- Makes text content verifiable
+- Detects unintended or malicious changes
+- Enables precise, block-level references
+
+---
+
 ## Trust and Key Management
 
 MEDF defines how documents are structured and verified,
