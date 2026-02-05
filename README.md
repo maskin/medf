@@ -112,6 +112,7 @@ A: We prioritize resilience over convenience. Central servers are single points 
 - **Public documents**: Revision history tracking
 - **Impersonation prevention**: Proving "same person" through key continuity
 - **Signing**: Claim of "I fixed this" (not trust)
+- **AI-generated documents**: Verifiable AI-assisted writing - see [docs/ai-generated-documents.md](docs/ai-generated-documents.en.md)
 
 ---
 
@@ -136,6 +137,7 @@ python3 medf.py sign document.medf.json --key private.key
 ## Specification
 
 - **Philosophy**: [PHILOSOPHY.md](PHILOSOPHY.md) (English) / [思想.md](思想.md) (日本語)
+- **AI-Generated Documents**: [docs/ai-generated-documents.md](docs/ai-generated-documents.en.md) (English) / [docs/ai-generated-documents.md](docs/ai-generated-documents.md) (日本語)
 - **Schema**: [spec/medf.schema.json](spec/medf.schema.json)
 - **Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
 - **License**: [LICENSE](LICENSE)
