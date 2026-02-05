@@ -24,30 +24,18 @@ MeDF is not a system for preserving or distributing documents themselves. It is 
 
 ---
 
-## Immutable vs Mutable Layers
+## Immutability and Mutability
 
-**Core Principle**: MeDF guarantees immutability of text and meaning, while allowing mutable presentation and interpretation layers on top of a verifiable core.
+In MEDF, the textual content of each block is immutable.
+Once published, the text itself MUST NOT be altered without creating a new version.
 
-### Immutable Layer (Verifiable)
+What is mutable is the presentation layer:
+rendering, layout, indexing, metadata views, and references MAY evolve
+without invalidating the original content.
 
-The following are **immutable once signed and verified**:
-
-- ✅ **Text** - Semantic content in `blocks[].text` (Markdown)
-- ✅ **Structure** - Block order, IDs, and relationships
-- ✅ **Meaning** - The canonical semantic information
-
-### Mutable Layer (Non-verifiable)
-
-The following are **mutable and not part of hash verification**:
-
-- ✅ **Presentation** - Visual styling, layout, rendering
-- ✅ **Indexing** - Table of contents, navigation, metadata
-- ✅ **Views** - Different interpretations, formats, or UIs
-- ✅ **Extensions** - Custom fields for application-specific use
-
-**Key Distinction**: The term "Mutable Expression" refers not to the text itself, but to its presentation, rendering, indexing, and interpretation layers, which may change without affecting document integrity.
-
-> "In MEDF, text is immutable, structure is immutable, meaning is immutable. Expression is mutable, presentation is mutable, views are mutable."
+In short:
+- **Text is immutable.**
+- **Presentation is mutable.**
 
 ---
 
@@ -101,17 +89,14 @@ python3 medf.py sign document.medf.json --key private.key
 
 ---
 
-## Canonicalization (RFC 8785)
+## Canonicalization
 
-MeDF adopts **RFC 8785 (JSON Canonicalization Scheme - JCS)** as its normative canonicalization standard.
+MEDF adopts RFC 8785 (JSON Canonicalization Scheme, JCS)
+for all cryptographic operations such as hashing and signing.
 
-**Key Points**:
-- ✅ No custom canonicalization rules defined
-- ✅ All hashes computed over RFC 8785–canonicalized JSON
-- ✅ Ensures interoperable and implementation-independent verification
-- ✅ Works offline without external dependencies
-
-> "MeDF does not define its own canonicalization rules. It normatively adopts RFC 8785 to ensure interoperable and implementation-independent verification."
+MEDF does not define its own canonicalization rules.
+This avoids ambiguity and ensures interoperability
+with existing cryptographic tooling.
 
 ---
 
@@ -162,6 +147,19 @@ See [docs/ai-generated-documents.md](docs/ai-generated-documents.en.md) for comp
 
 ---
 
+## Trust and Key Management
+
+MEDF defines how documents are structured and verified,
+but does not define global trust authorities or key management systems.
+
+How a public key is trusted (for example, organizational PKI,
+platform-based identity, or social proofs)
+is intentionally left outside the core specification.
+
+Reference implementations may demonstrate practical trust anchors.
+
+---
+
 ## Use Cases
 
 - **Academic papers**: Section-level reference (`MEDF: paper-2026-xyz#methodology`)
@@ -194,6 +192,8 @@ python3 medf.py sign document.medf.json --key private.key
 
 - **Philosophy**: [PHILOSOPHY.md](PHILOSOPHY.md) / [思想.md](思想.md)
 - **AI-Generated Documents**: [docs/ai-generated-documents.md](docs/ai-generated-documents.en.md) / [docs/ai-generated-documents.md](docs/ai-generated-documents.md)
+- **Trust Anchors**: [docs/trust.md](docs/trust.md) (Practical examples)
+- **Block IDs**: [docs/block-id.md](docs/block-id.md) (Guidelines)
 - **Schema**: [spec/medf.schema.json](spec/medf.schema.json)
 - **Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
 - **License**: [LICENSE](LICENSE)
