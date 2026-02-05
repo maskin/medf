@@ -1,5 +1,11 @@
 # MeDF Position on AI-Generated Documents
 
+**MeDF (Mutable Expression Description Format)**
+
+MeDF stands for **Mutable Expression Description Format**.
+
+---
+
 > **The problem with AI documents is not "AI wrote this"**
 > **The essence is "provenance and responsibility cannot be verified"**
 > **MeDF fixes "when, who, and with what intent"**

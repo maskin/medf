@@ -1,6 +1,11 @@
 # MeDF
 
-**Mutable Expression Description Format** - A format to fix document states, not to judge correctness or authority.
+**Mutable Expression Description Format**
+
+MeDF stands for **Mutable Expression Description Format**.
+
+A document format where canonical meaning is fixed,
+while expressions remain mutable.
 
 > "Records *when, who, and with what intent* a document existed"
 

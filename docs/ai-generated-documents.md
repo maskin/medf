@@ -1,5 +1,11 @@
 # AI生成文書（AI-generated documents）に対するMEDFの立場
 
+**MEDF（Mutable Expression Description Format）**
+
+MeDF stands for **Mutable Expression Description Format**.
+
+---
+
 > **AI文書の問題は「AIで書いたこと」ではない**
 > **本質は「来歴と責任が検証できないこと」**
 > **MeDFは「いつ・誰が・どの意図で」を固定する**

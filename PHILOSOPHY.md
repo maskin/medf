@@ -1,5 +1,14 @@
 # MeDF Philosophy (v0.1)
 
+**MeDF (Mutable Expression Description Format)**
+
+MeDF stands for **Mutable Expression Description Format**.
+
+A document format where canonical meaning is fixed,
+while expressions remain mutable.
+
+---
+
 ## 1. What MeDF Is
 
 MeDF (Mutable Expression Description Format) is **not** a system for preserving, distributing, or evaluating documents.
