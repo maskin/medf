@@ -10,6 +10,7 @@ It does not decide what is correct, official, or authoritative.
 import json
 import sys
 import hashlib
+import re
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -48,6 +49,107 @@ def canonical_json(obj) -> bytes:
 def sha256_hex(data: bytes) -> str:
     """Calculate SHA-256 hash and return as hex string"""
     return hashlib.sha256(data).hexdigest()
+
+
+def slugify(text: str) -> str:
+    """
+    Convert text to a valid block_id.
+
+    Converts header text to lowercase, replaces spaces with hyphens,
+    and removes special characters.
+    """
+    # Convert to lowercase
+    text = text.lower()
+    # Replace spaces and non-alphanumeric with hyphens
+    text = re.sub(r'[^a-z0-9]+', '-', text)
+    # Remove leading/trailing hyphens
+    text = text.strip('-')
+    return text
+
+
+def cmd_import(markdown_path: Path, doc_type: str = "philosophy"):
+    """
+    Import a Markdown file and convert to MEDF format.
+
+    Splits the Markdown file by ## headers and creates
+    a MEDF document with one block per section.
+    """
+    if not markdown_path.exists():
+        print(f"[Error] File not found: {markdown_path}")
+        sys.exit(1)
+
+    # Read Markdown content
+    content = markdown_path.read_text(encoding="utf-8")
+
+    # Extract title from first # header
+    title = None
+    first_line = content.split('\n')[0]
+    if first_line.startswith('# '):
+        title = first_line[2:].strip()
+
+    # Split by ## headers
+    sections = []
+    current_section = {"text": "", "title": None}
+
+    for line in content.split('\n'):
+        if line.startswith('## '):
+            # Save previous section
+            if current_section["title"] is not None:
+                sections.append(current_section)
+            # Start new section
+            current_section = {
+                "title": line[3:].strip(),
+                "text": ""
+            }
+        else:
+            current_section["text"] += line + '\n'
+
+    # Don't forget the last section
+    if current_section["title"] is not None:
+        sections.append(current_section)
+
+    # If no ## headers found, treat entire file as one block
+    if not sections:
+        sections = [{"title": title or "main", "text": content}]
+
+    # Create MEDF document
+    doc_id = slugify(markdown_path.stem)
+    blocks = []
+
+    for section in sections:
+        block_id = slugify(section["title"])
+        text = section["text"].strip()
+
+        blocks.append({
+            "block_id": block_id,
+            "role": "body",
+            "format": "markdown",
+            "text": text
+        })
+
+    doc = {
+        "medf_version": "0.2.1",
+        "id": doc_id,
+        "snapshot": datetime.now(timezone.utc).isoformat(),
+        "issuer": "imported",
+        "document_type": doc_type,
+        "blocks": blocks
+    }
+
+    # Output to JSON
+    output_path = markdown_path.with_suffix('.medf.json')
+    output_path.write_text(
+        json.dumps(doc, indent=2, ensure_ascii=False),
+        encoding="utf-8"
+    )
+
+    print(f"[OK] Imported {markdown_path.name}")
+    print(f"  Output: {output_path}")
+    print(f"  Sections: {len(blocks)}")
+    print()
+    print("Next steps:")
+    print(f"  python3 medf.py pack {output_path.name}")
+    print(f"  python3 medf.py verify {output_path.name}")
 
 
 def cmd_init():
@@ -469,6 +571,7 @@ def print_usage():
     print()
     print("COMMANDS:")
     print("  init        Initialize a MEDF document skeleton")
+    print("  import      Import a Markdown file to MEDF format")
     print("  pack        Generate hashes for blocks and the document")
     print("  diff        Diff two MEDF documents at block level")
     print("  sign        Attach a cryptographic signature to the document hash")
@@ -490,6 +593,7 @@ def print_usage():
     print("  • MEDF does not define trust authorities or key ownership.")
     print()
     print("EXAMPLES:")
+    print("  medf import PHILOSOPHY.md")
     print("  medf init > document.medf.json")
     print("  medf pack document.medf.json")
     print("  medf diff v1.medf.json v2.medf.json")
@@ -524,6 +628,17 @@ def main():
 
     if cmd == "init":
         cmd_init()
+    elif cmd == "import":
+        if len(sys.argv) < 3:
+            print("usage: medf import <markdown.md> [--type <document-type>]")
+            return
+        path = Path(sys.argv[2])
+        doc_type = "philosophy"
+        if "--type" in sys.argv:
+            type_idx = sys.argv.index("--type")
+            if type_idx + 1 < len(sys.argv):
+                doc_type = sys.argv[type_idx + 1]
+        cmd_import(path, doc_type=doc_type)
     elif cmd == "pack":
         if len(sys.argv) < 3:
             print("usage: medf pack <document.medf>")

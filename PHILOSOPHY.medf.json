@@ -1,0 +1,15 @@
+{
+  "medf_version": "0.2.1",
+  "id": "philosophy",
+  "snapshot": "2026-02-05T03:43:27.331243+00:00",
+  "issuer": "imported",
+  "document_type": "philosophy",
+  "blocks": [
+    {
+      "block_id": "main",
+      "role": "body",
+      "format": "markdown",
+      "text": "{\n  \"medf_version\": \"0.2.1\",\n  \"id\": \"example-doc\",\n  \"snapshot\": \"2026-02-05T03:38:06.518856+00:00\",\n  \"issuer\": \"example\",\n  \"blocks\": [\n    {\n      \"block_id\": \"example\",\n      \"role\": \"body\",\n      \"format\": \"markdown\",\n      \"text\": \"Hello MEDF\",\n      \"block_hash\": \"506681ea4fd0544e4bbce0444bcb80449caee9cb98dd7a2c0a79d3afb71005be\"\n    }\n  ],\n  \"doc_hash\": {\n    \"algorithm\": \"sha-256\",\n    \"value\": \"eeecab3dacfee5ad691de4077814f5e0baa4f0c02127c5c8a1fe17f5ad175185\"\n  }\n}"
+    }
+  ]
+}
