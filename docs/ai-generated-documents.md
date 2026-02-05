@@ -18,7 +18,7 @@
 重要なのは、問題の本質が **「AIで書いたこと」ではなく、
 「来歴と責任が検証できないこと」** にある点です。
 
-MEDF（Meaningful Document Format）は、
+MEDF（Mutable Expression Description Format）は、
 この構造的問題に対する **文書フォーマットとしての回答** を提供します。
 
 ---
