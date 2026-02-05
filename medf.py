@@ -25,7 +25,18 @@ except ImportError:
 
 
 def canonical_json(obj) -> bytes:
-    """Convert object to canonical JSON bytes"""
+    """
+    Convert object to canonical JSON bytes following RFC 8785 (JCS).
+
+    NORMATIVE: MeDF canonicalization MUST follow RFC 8785.
+    See: https://www.rfc-editor.org/rfc/rfc8785.html
+
+    Implementation:
+    - UTF-8 encoding
+    - Sorted keys (lexical order)
+    - No whitespace (separators=(",", ":"))
+    - Unicode characters preserved (ensure_ascii=False)
+    """
     return json.dumps(
         obj,
         sort_keys=True,

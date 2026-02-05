@@ -24,6 +24,33 @@ MeDF is not a system for preserving or distributing documents themselves. It is 
 
 ---
 
+## Immutable vs Mutable Layers
+
+**Core Principle**: MeDF guarantees immutability of text and meaning, while allowing mutable presentation and interpretation layers on top of a verifiable core.
+
+### Immutable Layer (Verifiable)
+
+The following are **immutable once signed and verified**:
+
+- ✅ **Text** - Semantic content in `blocks[].text` (Markdown)
+- ✅ **Structure** - Block order, IDs, and relationships
+- ✅ **Meaning** - The canonical semantic information
+
+### Mutable Layer (Non-verifiable)
+
+The following are **mutable and not part of hash verification**:
+
+- ✅ **Presentation** - Visual styling, layout, rendering
+- ✅ **Indexing** - Table of contents, navigation, metadata
+- ✅ **Views** - Different interpretations, formats, or UIs
+- ✅ **Extensions** - Custom fields for application-specific use
+
+**Key Distinction**: The term "Mutable Expression" refers not to the text itself, but to its presentation, rendering, indexing, and interpretation layers, which may change without affecting document integrity.
+
+> "In MEDF, text is immutable, structure is immutable, meaning is immutable. Expression is mutable, presentation is mutable, views are mutable."
+
+---
+
 ## Quick Start
 
 ```bash
@@ -69,6 +96,22 @@ python3 medf.py sign document.medf.json --key private.key
 - **blocks** - Minimal semantic units
 - **block_hash** - Hash for each block
 - **doc_hash** - Hash for entire document
+
+**Note on Markdown**: `blocks[].text` uses Markdown as a semantic markup language. It is treated as part of the immutable, verifiable content. Visual styling, layout, and rendering decisions are explicitly out of scope for MeDF and are considered mutable presentation layers.
+
+---
+
+## Canonicalization (RFC 8785)
+
+MeDF adopts **RFC 8785 (JSON Canonicalization Scheme - JCS)** as its normative canonicalization standard.
+
+**Key Points**:
+- ✅ No custom canonicalization rules defined
+- ✅ All hashes computed over RFC 8785–canonicalized JSON
+- ✅ Ensures interoperable and implementation-independent verification
+- ✅ Works offline without external dependencies
+
+> "MeDF does not define its own canonicalization rules. It normatively adopts RFC 8785 to ensure interoperable and implementation-independent verification."
 
 ---
 

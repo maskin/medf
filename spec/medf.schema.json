@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://medf.example/schema/medf-0.2.1.json",
+  "$comment": "NORMATIVE: MeDF canonicalization MUST follow RFC 8785 (JSON Canonicalization Scheme - JCS). All cryptographic hashes and signatures MUST be computed over RFC 8785–canonicalized JSON bytes. See: https://www.rfc-editor.org/rfc/rfc8785.html",
   "title": "MEDF Document v0.2.1",
   "type": "object",
   "required": ["medf_version", "id", "snapshot", "issuer", "blocks"],
