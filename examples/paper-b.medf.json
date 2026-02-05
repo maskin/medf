@@ -1,0 +1,21 @@
+{
+  "medf_version": "0.2.2",
+  "id": "paper-b",
+  "snapshot": "2026-02-05T12:00:00Z",
+  "issuer": "medf-examples",
+  "document_type": "academic_paper",
+  "language": "en",
+  "blocks": [
+    {
+      "block_id": "results",
+      "role": "results",
+      "format": "markdown",
+      "text": "## Results\n\nOur experiments demonstrate that MEDF reference tracking works offline while supporting optional online fetching.",
+      "block_hash": "sha256:def456..."
+    }
+  ],
+  "doc_hash": {
+    "algorithm": "sha-256",
+    "value": "placeholder"
+  }
+}

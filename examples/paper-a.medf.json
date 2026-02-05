@@ -1,0 +1,28 @@
+{
+  "medf_version": "0.2.2",
+  "id": "paper-a",
+  "snapshot": "2026-02-05T12:00:00Z",
+  "issuer": "medf-examples",
+  "document_type": "academic_paper",
+  "language": "en",
+  "blocks": [
+    {
+      "block_id": "abstract",
+      "role": "abstract",
+      "format": "markdown",
+      "text": "This paper demonstrates MEDF reference tracking.\n\nWe cite MEDF: paper-b#results to support our conclusions.",
+      "block_hash": "sha256:abc123...",
+      "references": [
+        {
+          "document_id": "paper-b",
+          "block_id": "results",
+          "uri": "./paper-b.medf.json"
+        }
+      ]
+    }
+  ],
+  "doc_hash": {
+    "algorithm": "sha-256",
+    "value": "placeholder"
+  }
+}

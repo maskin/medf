@@ -279,8 +279,53 @@ python3 medf.py sign document.medf.json --key private.key
 
 ---
 
+## Reference Tracking (Draft)
+
+**Proposal v0.2.2**: Blocks can cite other MEDF documents and blocks.
+
+**Citation format in text:**
+```
+MEDF: paper-2026-example#methodology
+```
+
+**Structured references (optional):**
+```json
+{
+  "block_id": "discussion",
+  "references": [
+    {
+      "document_id": "paper-2026-example",
+      "block_id": "methodology",
+      "uri": "./paper-2026-example.medf.json"
+    }
+  ]
+}
+```
+
+**Proposed command:**
+```bash
+# Resolve references (offline-first)
+medf resolve document.medf.json --block discussion
+
+# Fetch remote references (explicit online)
+medf resolve document.medf.json --block discussion --fetch
+```
+
+**Key principles:**
+- ✅ **Offline-first**: Reference resolution works without network
+- ✅ **Optional online**: Fetch only with explicit `--fetch` flag
+- ✅ **Local caching**: Fetched documents cached for offline use
+- ✅ **Not validation**: References are metadata, not requirements
+
+📖 **Full specification**: [docs/references.md](docs/references.md)
+
+**Status**: Draft proposal. Feedback welcome!
+
+---
+
 ## Specification
 
+- **Reference Tracking**: [docs/references.md](docs/references.md) (Draft v0.2.2)
 - **Philosophy**: [PHILOSOPHY.md](PHILOSOPHY.md) / [思想.md](思想.md)
 - **AI-Generated Documents**: [docs/ai-generated-documents.md](docs/ai-generated-documents.en.md) / [docs/ai-generated-documents.md](docs/ai-generated-documents.md)
 - **Trust Anchors**: [docs/trust.md](docs/trust.md) (Practical examples)
