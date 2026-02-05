@@ -7,6 +7,7 @@ Usage:
     python3 medf.py init
     python3 medf.py hash file.medf.json
     python3 medf.py verify file.medf.json
+    python3 medf.py sign file.medf.json --key private.key
 """
 
 import json
@@ -14,6 +15,13 @@ import sys
 import hashlib
 from pathlib import Path
 from datetime import datetime, timezone
+
+try:
+    from nacl.signing import SigningKey, VerifyKey
+    from nacl.exceptions import BadSignatureError
+    HAS_NACL = True
+except ImportError:
+    HAS_NACL = False
 
 
 def canonical_json(obj) -> bytes:
@@ -105,6 +113,10 @@ def cmd_verify(path: Path):
             return
 
     # Verify document hash
+    if "doc_hash" not in doc:
+        print("[NG] No doc_hash found")
+        return
+
     expected = doc["doc_hash"]["value"]
     doc_src = {
         k: v for k, v in doc.items()
@@ -120,34 +132,102 @@ def cmd_verify(path: Path):
     print("[OK] verified")
 
 
+def cmd_sign(path: Path, key_path: Path):
+    """Sign document with private key"""
+    if not HAS_NACL:
+        print("[Error] PyNaCl is required for signing")
+        print("Install: pip install pynacl")
+        sys.exit(1)
+
+    doc = json.loads(path.read_text(encoding="utf-8"))
+
+    # Read private key
+    try:
+        key = SigningKey.load(key_path.read_bytes())
+    except Exception as e:
+        print(f"[Error] Failed to load private key: {e}")
+        sys.exit(1)
+
+    # Sign doc_hash.value
+    if "doc_hash" not in doc:
+        print("[Error] No doc_hash found to sign")
+        print("Run 'medf hash' first")
+        sys.exit(1)
+
+    hash_value = doc["doc_hash"]["value"]
+    message = hash_value.encode("utf-8")
+
+    # Sign
+    signature_bytes = key.sign(message)
+    signature_value = signature_bytes.decode("utf-8")
+
+    # Get public key
+    public_key = key.verify_key
+
+    doc["signature"] = {
+        "algorithm": "ed25519",
+        "value": signature_value,
+        "public_key": public_key.encode().decode("utf-8"),
+        "signed_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    # Write updated document
+    path.write_text(
+        json.dumps(doc, indent=2, ensure_ascii=False),
+        encoding="utf-8"
+    )
+
+    print(f"[OK] signed: {path}")
+    print(f"  Algorithm: ed25519")
+    print(f"  Signer: {doc['signature']['public_key'][:40]}...")
+
+
 def main():
     if len(sys.argv) < 2:
-        print("usage: medf init|hash|verify [file]")
+        print("usage: medf init|hash|verify|sign [file] [options]")
         print("")
         print("Commands:")
-        print("  init           Show template document")
-        print("  hash <file>    Calculate hashes")
-        print("  verify <file>  Verify document integrity")
+        print("  init                    Show template document")
+        print("  hash <file>             Calculate hashes")
+        print("  verify <file>           Verify document integrity")
+        print("  sign <file> --key <key>  Sign document")
         return
 
     cmd = sys.argv[1]
 
     if cmd == "init":
         cmd_init()
-    elif cmd in ("hash", "verify"):
+    elif cmd == "hash":
         if len(sys.argv) < 3:
-            print(f"usage: medf {cmd} <file>")
+            print("usage: medf hash <file>")
             return
-
         path = Path(sys.argv[2])
         if not path.exists():
             print(f"[Error] File not found: {path}")
             return
-
-        if cmd == "hash":
-            cmd_hash(path)
-        else:
-            cmd_verify(path)
+        cmd_hash(path)
+    elif cmd == "verify":
+        if len(sys.argv) < 3:
+            print("usage: medf verify <file>")
+            return
+        path = Path(sys.argv[2])
+        if not path.exists():
+            print(f"[Error] File not found: {path}")
+            return
+        cmd_verify(path)
+    elif cmd == "sign":
+        if len(sys.argv) < 4:
+            print("usage: medf sign <file> --key <private_key>")
+            return
+        path = Path(sys.argv[2])
+        key_path = Path(sys.argv[4])
+        if not path.exists():
+            print(f"[Error] File not found: {path}")
+            return
+        if not key_path.exists():
+            print(f"[Error] Key file not found: {key_path}")
+            return
+        cmd_sign(path, key_path)
     else:
         print(f"[Error] Unknown command: {cmd}")
 
