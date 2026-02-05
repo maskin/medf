@@ -11,6 +11,33 @@ not authority, correctness, or trust.
 
 ---
 
+## Concept
+
+MEDF separates immutable text from mutable presentation.
+
+```
++---------------------------+
+|        MEDF Document      |
++---------------------------+
+|  Immutable Text Blocks    |  ← hashed & verifiable
+|  ----------------------  |
+|  block: executive_summary |
+|  block: policy            |
+|  block: appendix          |
++---------------------------+
+|  Mutable Presentation     |  ← free to change
+|  ----------------------  |
+|  rendering (HTML/PDF)     |
+|  indexing / TOC           |
+|  layout / styling         |
++---------------------------+
+```
+
+Only the text blocks are part of the cryptographic identity.
+Everything else can evolve without breaking verification.
+
+---
+
 ## Overview
 
 MeDF is not a system for preserving or distributing documents themselves. It is a format for **describing the state** that "a document existed at a certain point in time, with certain intent."

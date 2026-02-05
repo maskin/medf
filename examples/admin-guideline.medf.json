@@ -1,0 +1,22 @@
+{
+  "medf_version": "0.2.1",
+  "id": "admin-guideline-example",
+  "snapshot": "2026-02-05T10:00:00Z",
+  "issuer": "medf-examples",
+  "document_type": "administrative_guideline",
+  "language": "ja",
+  "blocks": [
+    {
+      "block_id": "purpose",
+      "role": "policy",
+      "format": "markdown",
+      "text": "本ガイドラインは、公開文書の改ざん検出を目的とする。"
+    },
+    {
+      "block_id": "scope",
+      "role": "scope",
+      "format": "markdown",
+      "text": "本書は参考情報であり、法的効力を持たない。"
+    }
+  ]
+}

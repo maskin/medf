@@ -1,0 +1,22 @@
+{
+  "medf_version": "0.2.1",
+  "id": "academic-paper-example",
+  "snapshot": "2026-02-05T10:00:00Z",
+  "issuer": "medf-examples",
+  "document_type": "academic_paper",
+  "language": "en",
+  "blocks": [
+    {
+      "block_id": "abstract",
+      "role": "abstract",
+      "format": "markdown",
+      "text": "This paper demonstrates how MEDF preserves\n the integrity of academic text across versions."
+    },
+    {
+      "block_id": "method",
+      "role": "method",
+      "format": "markdown",
+      "text": "Text is structured into semantic blocks,\n each independently hashable."
+    }
+  ]
+}

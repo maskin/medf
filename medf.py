@@ -113,7 +113,7 @@ def cmd_pack(path: Path):
     print(f"  Document hash: {doc['doc_hash']['value'][:16]}...")
 
 
-def cmd_verify(path: Path, explain: bool = False):
+def cmd_verify(path: Path, explain: bool = False, json_output: bool = False):
     """
     Verify block hashes, document hash, and signature.
 
@@ -145,19 +145,32 @@ def cmd_verify(path: Path, explain: bool = False):
             break
 
     if failed_block:
-        print("✖ Block hash mismatch")
-        print()
-        print("Details:")
-        print(f"  block_id: {failed_block['block_id']}")
-        print(f"  expected: sha256:{failed_block['expected'][:16]}...")
-        print(f"  actual:   sha256:{failed_block['actual'][:16]}...")
-        print()
-        print("The text content of this block has been altered.")
+        result = {
+            "result": "error",
+            "error": "block_hash_mismatch",
+            "block_id": failed_block["block_id"],
+            "expected": f"sha256:{failed_block['expected'][:16]}...",
+            "actual": f"sha256:{failed_block['actual'][:16]}..."
+        }
+        if json_output:
+            print(json.dumps(result, indent=2))
+        else:
+            print("✖ Block hash mismatch")
+            print()
+            print("Details:")
+            print(f"  block_id: {failed_block['block_id']}")
+            print(f"  expected: sha256:{failed_block['expected'][:16]}...")
+            print(f"  actual:   sha256:{failed_block['actual'][:16]}...")
+            print()
+            print("The text content of this block has been altered.")
         return
 
     # Verify document hash
     if "doc_hash" not in doc:
-        print("✖ No document hash found")
+        if json_output:
+            print(json.dumps({"result": "error", "error": "no_document_hash"}, indent=2))
+        else:
+            print("✖ No document hash found")
         return
 
     expected = doc["doc_hash"]["value"]
@@ -167,9 +180,12 @@ def cmd_verify(path: Path, explain: bool = False):
     }
     actual = sha256_hex(canonical_json(doc_src))
     if expected != actual:
-        print("✖ Document hash mismatch")
-        print()
-        print("The document structure has been altered.")
+        if json_output:
+            print(json.dumps({"result": "error", "error": "document_hash_mismatch"}, indent=2))
+        else:
+            print("✖ Document hash mismatch")
+            print()
+            print("The document structure has been altered.")
         return
 
     # Verify signature (if present)
@@ -187,37 +203,71 @@ def cmd_verify(path: Path, explain: bool = False):
                 public_key.verify(hash_value, sig["value"].encode("utf-8"))
                 signature_valid = True
             except Exception:
-                print("✖ Signature verification failed")
-                print()
-                print("The signature does not match the document hash.")
+                if json_output:
+                    print(json.dumps({"result": "error", "error": "signature_verification_failed"}, indent=2))
+                else:
+                    print("✖ Signature verification failed")
+                    print()
+                    print("The signature does not match the document hash.")
                 return
 
     # Success output
-    print("✔ Document hash matches")
-    print("✔ All block hashes match")
+    if json_output:
+        result = {
+            "result": "ok",
+            "integrity": "verified",
+            "checked": {
+                "document_hash": True,
+                "block_hashes": True
+            }
+        }
 
-    if has_signature and signature_valid is True:
-        print("✔ Signature is cryptographically valid")
-        print()
-        print("Summary:")
-        print("  Integrity: verified")
-        print("  Reproducibility: verified")
-        print("  Trust decision: not evaluated")
-    elif has_signature and signature_valid == "skipped":
-        print("⚠ Signature present (PyNaCl not installed)")
-        print()
-        print("Summary:")
-        print("  Integrity: verified")
-        print("  Signature: present (not verified)")
-        print("  Trust decision: not evaluated")
+        if has_signature and signature_valid is True:
+            result["reproducibility"] = "verified"
+            result["signature"] = {
+                "present": True,
+                "valid": True
+            }
+            result["trust_decision"] = "not_evaluated"
+        elif has_signature and signature_valid == "skipped":
+            result["signature"] = {
+                "present": True,
+                "valid": None
+            }
+            result["trust_decision"] = "not_evaluated"
+        else:
+            result["signature"] = {
+                "present": False
+            }
+            result["trust_decision"] = "not_applicable"
+
+        print(json.dumps(result, indent=2))
     else:
-        print()
-        print("Summary:")
-        print("  Integrity: verified")
-        print("  Signature: not present")
-        print("  Trust decision: not applicable")
+        print("✔ Document hash matches")
+        print("✔ All block hashes match")
 
-    if explain:
+        if has_signature and signature_valid is True:
+            print("✔ Signature is cryptographically valid")
+            print()
+            print("Summary:")
+            print("  Integrity: verified")
+            print("  Reproducibility: verified")
+            print("  Trust decision: not evaluated")
+        elif has_signature and signature_valid == "skipped":
+            print("⚠ Signature present (PyNaCl not installed)")
+            print()
+            print("Summary:")
+            print("  Integrity: verified")
+            print("  Signature: present (not verified)")
+            print("  Trust decision: not evaluated")
+        else:
+            print()
+            print("Summary:")
+            print("  Integrity: verified")
+            print("  Signature: not present")
+            print("  Trust decision: not applicable")
+
+        if explain:
         print()
         print("="*60)
         if has_signature and signature_valid is True:
@@ -355,6 +405,10 @@ def print_usage():
     print("  --help      Show this help message")
     print("  --version   Show version information")
     print()
+    print("VERIFICATION OPTIONS:")
+    print("  --explain    Explain verification results in plain language")
+    print("  --json      Output verification results as JSON")
+    print()
     print("NOTES:")
     print("  • Text content in MEDF blocks is immutable once published.")
     print("  • Presentation (rendering, indexing, layout) is mutable.")
@@ -365,6 +419,8 @@ def print_usage():
     print("  medf init > document.medf.json")
     print("  medf pack document.medf.json")
     print("  medf verify document.medf.json")
+    print("  medf verify document.medf.json --explain")
+    print("  medf verify document.medf.json --json")
     print("  medf sign document.medf.json --key private.key")
     print("  medf explain")
     print()
@@ -416,14 +472,15 @@ def main():
         cmd_pack(path)
     elif cmd == "verify":
         explain = "--explain" in sys.argv
+        json_output = "--json" in sys.argv
         if len(sys.argv) < 3:
-            print("usage: medf verify <document.medf> [--explain]")
+            print("usage: medf verify <document.medf> [--explain] [--json]")
             return
         path = Path(sys.argv[2])
         if not path.exists():
             print(f"[Error] File not found: {path}")
             return
-        cmd_verify(path, explain=explain)
+        cmd_verify(path, explain=explain, json_output=json_output)
     elif cmd == "sign":
         if len(sys.argv) < 4:
             print("usage: medf sign <document.medf> --key <private-key>")
