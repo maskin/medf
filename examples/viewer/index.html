@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEDF Viewer Example</title>
+  <link rel="stylesheet" href="medf-viewer.css">
+</head>
+<body>
+  <div class="medf-viewer">
+    <header class="medf-header">
+      <h1 id="document-title">Loading...</h1>
+      <div class="medf-meta">
+        <span class="medf-id" id="document-id">-</span>
+        <span class="medf-snapshot" id="document-snapshot">-</span>
+        <span class="medf-verification" id="verification-status"></span>
+      </div>
+    </header>
+
+    <div class="medf-layout">
+      <nav class="medf-toc" id="table-of-contents">
+        <h2>Contents</h2>
+        <ul id="toc-list"></ul>
+      </nav>
+
+      <main class="medf-content" id="document-content">
+        <!-- Blocks will be rendered here -->
+      </main>
+    </div>
+
+    <footer class="medf-footer">
+      <div class="medf-footer-info">
+        <p>Powered by <a href="https://github.com/maskin/medf">MEDF</a> — Mutable Expression Description Format</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="medf-viewer.js"></script>
+  <script>
+    // Initialize viewer with example document
+    const viewer = new MEDFViewer();
+
+    // Load document from URL parameter or default
+    const urlParams = new URLSearchParams(window.location.search);
+    const docPath = urlParams.get('doc') || '../academic-paper.medf.json';
+
+    viewer.loadAndVerify(docPath)
+      .then(result => {
+        if (result.verified) {
+          console.log('Document verified:', result.hash);
+        } else {
+          console.warn('Document verification failed');
+        }
+      })
+      .catch(error => {
+        console.error('Failed to load document:', error);
+        document.getElementById('document-content').innerHTML =
+          '<div class="medf-error">Failed to load document: ' + error.message + '</div>';
+      });
+
+    // Handle hash navigation
+    window.addEventListener('hashchange', () => {
+      const blockId = window.location.hash.substring(1);
+      if (blockId) {
+        viewer.navigateToBlock(blockId);
+      }
+    });
+
+    // Initial hash navigation
+    if (window.location.hash) {
+      const blockId = window.location.hash.substring(1);
+      setTimeout(() => viewer.navigateToBlock(blockId), 100);
+    }
+  </script>
+</body>
+</html>

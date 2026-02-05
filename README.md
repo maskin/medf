@@ -323,8 +323,42 @@ medf resolve document.medf.json --block discussion --fetch
 
 ---
 
+## MEDF Viewer (Draft)
+
+**Proposal**: Flexible, block-based document viewer — not fixed layout like PDF.
+
+**Key features:**
+- 📱 **Responsive**: Adapts to device, no fixed page boundaries
+- 🔗 **Block-level linking**: `MEDF: doc#section` → direct navigation
+- 📄 **Block embedding**: Embed individual sections in web pages
+- 🎨 **Flexible styling**: Themes, fonts, layouts are mutable
+
+**Examples:**
+
+```html
+<!-- Embed single block -->
+<medf-block src="paper.medf.json" block-id="abstract"></medf-block>
+```
+
+```javascript
+// Navigate to block
+viewer.navigateToBlock('methodology');
+```
+
+**Live demos:** [examples/viewer/](examples/viewer/)
+- `index.html` - Full viewer with TOC
+- `embed.html` - Block embedding examples
+- `web-component.html` - Web Component API proposal
+
+**📖 Full specification:** [docs/viewer.md](docs/viewer.md)
+
+**Status:** Reference implementation available. Web Components proposed.
+
+---
+
 ## Specification
 
+- **Viewer**: [docs/viewer.md](docs/viewer.md) (Reference implementation)
 - **Reference Tracking**: [docs/references.md](docs/references.md) (Draft v0.2.2)
 - **Philosophy**: [PHILOSOPHY.md](PHILOSOPHY.md) / [思想.md](思想.md)
 - **AI-Generated Documents**: [docs/ai-generated-documents.md](docs/ai-generated-documents.en.md) / [docs/ai-generated-documents.md](docs/ai-generated-documents.md)
