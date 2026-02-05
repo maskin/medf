@@ -67,12 +67,15 @@ def slugify(text: str) -> str:
     return text
 
 
-def cmd_import(markdown_path: Path, doc_type: str = "philosophy"):
+def cmd_import(markdown_path: Path, doc_type: str = "philosophy", auto_pack: bool = True):
     """
     Import a Markdown file and convert to MEDF format.
 
     Splits the Markdown file by ## headers and creates
     a MEDF document with one block per section.
+
+    By default, automatically runs pack to generate hashes.
+    Use --no-pack to skip hashing.
     """
     if not markdown_path.exists():
         print(f"[Error] File not found: {markdown_path}")
@@ -146,10 +149,21 @@ def cmd_import(markdown_path: Path, doc_type: str = "philosophy"):
     print(f"[OK] Imported {markdown_path.name}")
     print(f"  Output: {output_path}")
     print(f"  Sections: {len(blocks)}")
-    print()
-    print("Next steps:")
-    print(f"  python3 medf.py pack {output_path.name}")
-    print(f"  python3 medf.py verify {output_path.name}")
+
+    # Auto-pack by default
+    if auto_pack:
+        print()
+        cmd_pack(output_path)
+        # Reload to get doc_hash
+        packed_doc = json.loads(output_path.read_text(encoding="utf-8"))
+        print()
+        print("Verified and ready!")
+        print(f"  Document hash: {packed_doc['doc_hash']['value'][:16]}...")
+    else:
+        print()
+        print("Next steps:")
+        print(f"  python3 medf.py pack {output_path.name}")
+        print(f"  python3 medf.py verify {output_path.name}")
 
 
 def cmd_init():
@@ -582,6 +596,10 @@ def print_usage():
     print("  --help      Show this help message")
     print("  --version   Show version information")
     print()
+    print("IMPORT OPTIONS:")
+    print("  --type <type>    Set document type (default: philosophy)")
+    print("  --no-pack        Skip automatic hashing after import")
+    print()
     print("VERIFICATION OPTIONS:")
     print("  --explain    Explain verification results in plain language")
     print("  --json      Output verification results as JSON")
@@ -594,6 +612,8 @@ def print_usage():
     print()
     print("EXAMPLES:")
     print("  medf import PHILOSOPHY.md")
+    print("  medf import README.md --type readme")
+    print("  medf import DRAFT.md --no-pack")
     print("  medf init > document.medf.json")
     print("  medf pack document.medf.json")
     print("  medf diff v1.medf.json v2.medf.json")
@@ -630,15 +650,18 @@ def main():
         cmd_init()
     elif cmd == "import":
         if len(sys.argv) < 3:
-            print("usage: medf import <markdown.md> [--type <document-type>]")
+            print("usage: medf import <markdown.md> [--type <document-type>] [--no-pack]")
             return
         path = Path(sys.argv[2])
         doc_type = "philosophy"
+        auto_pack = True
         if "--type" in sys.argv:
             type_idx = sys.argv.index("--type")
             if type_idx + 1 < len(sys.argv):
                 doc_type = sys.argv[type_idx + 1]
-        cmd_import(path, doc_type=doc_type)
+        if "--no-pack" in sys.argv:
+            auto_pack = False
+        cmd_import(path, doc_type=doc_type, auto_pack=auto_pack)
     elif cmd == "pack":
         if len(sys.argv) < 3:
             print("usage: medf pack <document.medf>")
