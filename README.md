@@ -438,3 +438,36 @@ python3 medf.py verify downloaded.medf.json
 
 - GitHub: https://github.com/maskin/medf
 - Schema: [spec/medf.schema.json](spec/medf.schema.json)
+
+---
+
+## MeDF Hub Platform
+
+**MeDF Hub** is the reference implementation platform for MEDF document sharing and discussion.
+
+**Repository**: https://github.com/maskin/medf-hub
+
+**Features**:
+- 📄 **Document Management**: Markdown → MEDF conversion, block-level verification
+- 💬 **Discussion**: Block-level comments and threaded discussions
+- 🌐 **IPFS Integration**: Pinata integration for decentralized publishing
+- 📤 **Export**: HTML/PDF/JSON output with metadata
+- 🔔 **Notifications**: Comment and update notifications
+
+**Tech Stack**:
+- Frontend: React 19 + Tailwind CSS 4
+- Backend: Express 4 + tRPC 11
+- Database: MySQL/TiDB
+- IPFS: Pinata API
+
+**Relationship**:
+- **This repository (medf)**: Format specification and CLI tools
+- **MeDF Hub (medf-hub)**: Platform implementation for document sharing
+
+**Quick Start**:
+1. Login with Manus OAuth
+2. Create document from Markdown
+3. Add block-level comments
+4. Publish to IPFS with one click
+
+See [MeDF Hub README](https://github.com/maskin/medf-hub) for details.
