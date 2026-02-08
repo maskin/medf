@@ -1,5 +1,10 @@
 # MeDF — Mutable Expression Description Format
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![medf_version](https://img.shields.io/badge/medf-0.2.1-blue)](spec/medf.schema.json)
+
+**TL;DR**: Verifiable documents with immutable text and flexible presentation. For researchers, developers, and anyone who needs citable, tamper-evident content.
+
 MEDF is a document format designed to make text verifiable
 while allowing flexible presentation and reuse.
 
@@ -358,12 +363,14 @@ viewer.navigateToBlock('methodology');
 
 ## Specification
 
+- **Architecture**: [ARCHITECTURE.md](ARCHITECTURE.md) (System design)
 - **Viewer**: [docs/viewer.md](docs/viewer.md) (Reference implementation)
 - **Reference Tracking**: [docs/references.md](docs/references.md) (Draft v0.2.2)
 - **Philosophy**: [PHILOSOPHY.md](PHILOSOPHY.md) / [思想.md](思想.md)
 - **AI-Generated Documents**: [docs/ai-generated-documents.md](docs/ai-generated-documents.en.md) / [docs/ai-generated-documents.md](docs/ai-generated-documents.md)
 - **Trust Anchors**: [docs/trust.md](docs/trust.md) (Practical examples)
 - **Block IDs**: [docs/block-id.md](docs/block-id.md) (Guidelines)
+- **Troubleshooting**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) (Common issues)
 - **Schema**: [spec/medf.schema.json](spec/medf.schema.json)
 - **Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
 - **License**: [LICENSE](LICENSE)
@@ -382,6 +389,48 @@ MIT License - [LICENSE](LICENSE)
 
 - **v0.2**: Public document specification (JSON-embedded)
 - **v0.1**: Minimal structure (external reference)
+
+---
+
+## IPFS Compatibility
+
+MEDF documents work well with IPFS (InterPlanetary File System) for content-addressed storage and distribution.
+
+**Key compatibility features:**
+- ✅ **Content addressing**: `doc_hash` serves as content identifier
+- ✅ **Immutable storage**: Content-addressed via CID (Content Identifier)
+- ✅ **Optional pinning**: Pin to IPFS for persistent availability
+- ✅ **Offline-first**: No IPFS required for verification
+
+**Example workflow:**
+
+```bash
+# 1. Create MEDF document
+python3 medf.py import document.md
+
+# 2. Add to IPFS
+ipfs add document.medf.json
+# Output: added QmABC123... document.medf.json
+
+# 3. Pin for persistence (optional)
+ipfs pin add QmABC123...
+
+# 4. Share via IPFS
+ipfs get QmABC123... -o downloaded.medf.json
+python3 medf.py verify downloaded.medf.json
+```
+
+**Benefits of IPFS + MEDF:**
+- **Decentralized**: No central server required
+- **Verifiable**: Hash-based content addressing
+- **Persistent**: Content remains available as long as pinned
+- **Citable**: Stable CID for referencing
+
+**Note**: IPFS is **optional**. MEDF works fully offline without IPFS. IPFS integration is for users who want decentralized storage and distribution.
+
+**Learn more**:
+- [IPFS Documentation](https://docs.ipfs.tech/)
+- [Content Addressing](https://docs.ipfs.tech/concepts/content-addressing/)
 
 ---
 
