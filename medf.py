@@ -572,6 +572,239 @@ def cmd_diff(old_path: Path, new_path: Path, json_output: bool = False):
             print("No changes detected.")
 
 
+def cmd_validate(path: Path):
+    """
+    Validate the structure of a MEDF document (v0.2.1 layout).
+
+    This checks structure only: required fields, block shape, and
+    hash formats. It does NOT check integrity - use `verify` for that.
+
+    Ported from the legacy cli/ validator and reimplemented for the
+    v0.2.1 block format using only the standard library.
+    """
+    errors = []
+    warnings = []
+
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as e:
+        print(f"✖ Invalid JSON: {e}")
+        return False
+
+    if not isinstance(doc, dict):
+        print("✖ Document must be a JSON object")
+        return False
+
+    # Top-level required fields
+    for field in ("medf_version", "id", "snapshot", "blocks"):
+        if field not in doc:
+            errors.append(f"missing required field: {field}")
+
+    if "medf_version" in doc and doc["medf_version"] != VERSION:
+        warnings.append(
+            f"medf_version is {doc['medf_version']!r}; this tool targets {VERSION}"
+        )
+
+    if "id" in doc and not (isinstance(doc["id"], str) and doc["id"]):
+        errors.append("id must be a non-empty string")
+
+    # Blocks
+    blocks = doc.get("blocks")
+    if blocks is not None:
+        if not isinstance(blocks, list) or not blocks:
+            errors.append("blocks must be a non-empty array")
+            blocks = []
+        seen_ids = set()
+        for i, block in enumerate(blocks):
+            label = block.get("block_id", f"#{i}") if isinstance(block, dict) else f"#{i}"
+            if not isinstance(block, dict):
+                errors.append(f"block {label}: must be an object")
+                continue
+            for field in ("block_id", "role", "format", "text"):
+                if field not in block:
+                    errors.append(f"block {label}: missing field: {field}")
+            bid = block.get("block_id")
+            if bid in seen_ids:
+                errors.append(f"block {label}: duplicate block_id")
+            seen_ids.add(bid)
+            bh = block.get("block_hash")
+            if bh is not None and not (
+                isinstance(bh, str) and re.fullmatch(r"[0-9a-f]{64}", bh)
+            ):
+                errors.append(f"block {label}: block_hash must be 64 lowercase hex chars")
+
+    # doc_hash structure
+    dh = doc.get("doc_hash")
+    if dh is not None:
+        if not isinstance(dh, dict):
+            errors.append("doc_hash must be an object")
+        else:
+            if dh.get("algorithm") != "sha-256":
+                errors.append("doc_hash.algorithm must be 'sha-256'")
+            value = dh.get("value", "")
+            if not (isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value)):
+                errors.append("doc_hash.value must be 64 lowercase hex chars")
+    else:
+        warnings.append("no doc_hash present (run `medf pack` to generate hashes)")
+
+    for w in warnings:
+        print(f"⚠ {w}")
+    if errors:
+        for e in errors:
+            print(f"✖ {e}")
+        print()
+        print(f"INVALID: {len(errors)} error(s)")
+        return False
+
+    print(f"✔ {path} is structurally valid (MEDF {doc.get('medf_version')})")
+    print(f"  Blocks: {len(doc.get('blocks', []))}")
+    print("  Note: structure only - run `medf verify` for integrity.")
+    return True
+
+
+def _md_inline(text: str) -> str:
+    """Minimal inline Markdown rendering on already-escaped HTML text."""
+    text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
+    text = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
+    text = re.sub(r"(?<![\w*])\*([^*]+)\*(?![\w*])", r"<em>\1</em>", text)
+    text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', text)
+    return text
+
+
+def _md_to_html(md_text: str) -> str:
+    """Minimal block-level Markdown to HTML (stdlib only)."""
+    import html as _html
+
+    out = []
+    in_code = False
+    code_buf = []
+    in_list = False
+
+    def close_list():
+        nonlocal in_list
+        if in_list:
+            out.append("</ul>")
+            in_list = False
+
+    for line in md_text.split("\n"):
+        if line.strip().startswith("```"):
+            if in_code:
+                out.append("<pre><code>" + _html.escape("\n".join(code_buf)) + "</code></pre>")
+                code_buf = []
+                in_code = False
+            else:
+                close_list()
+                in_code = True
+            continue
+        if in_code:
+            code_buf.append(line)
+            continue
+
+        stripped = line.strip()
+        if not stripped:
+            close_list()
+            continue
+
+        m = re.match(r"^(#{1,6})\s+(.*)$", stripped)
+        if m:
+            close_list()
+            level = len(m.group(1))
+            out.append(f"<h{level}>{_md_inline(_html.escape(m.group(2)))}</h{level}>")
+            continue
+
+        if re.match(r"^(-{3,}|\*{3,})$", stripped):
+            close_list()
+            out.append("<hr>")
+            continue
+
+        m = re.match(r"^[-*+]\s+(.*)$", stripped)
+        if m:
+            if not in_list:
+                out.append("<ul>")
+                in_list = True
+            out.append(f"<li>{_md_inline(_html.escape(m.group(1)))}</li>")
+            continue
+
+        close_list()
+        if stripped.startswith("> "):
+            out.append(f"<blockquote>{_md_inline(_html.escape(stripped[2:]))}</blockquote>")
+        else:
+            out.append(f"<p>{_md_inline(_html.escape(stripped))}</p>")
+
+    if in_code:
+        out.append("<pre><code>" + _html.escape("\n".join(code_buf)) + "</code></pre>")
+    close_list()
+    return "\n".join(out)
+
+
+def cmd_to_html(input_path: Path, output_path: Path):
+    """
+    Render a MEDF document (v0.2.1 block format) as a standalone HTML page.
+
+    Presentation is mutable in MEDF; this rendering is one possible view.
+    The text and hashes shown are exactly those fixed in the document.
+
+    Ported from the legacy cli/ HTML converter and reimplemented for
+    the v0.2.1 block format using only the standard library.
+    """
+    import html as _html
+
+    doc = json.loads(input_path.read_text(encoding="utf-8"))
+
+    doc_hash = doc.get("doc_hash", {}).get("value", "(not packed)")
+    title = _html.escape(str(doc.get("id", "MEDF Document")))
+
+    sections = []
+    for block in doc.get("blocks", []):
+        bid = _html.escape(str(block.get("block_id", "")))
+        body = _md_to_html(block.get("text", ""))
+        bh = block.get("block_hash", "")
+        bh_line = f'<p class="block-hash">block_hash: { _html.escape(bh) }</p>' if bh else ""
+        sections.append(
+            f'<section id="{bid}">\n<h2 class="block-title">{bid}</h2>\n{body}\n{bh_line}\n</section>'
+        )
+
+    page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title}</title>
+<style>
+  body {{ max-width: 800px; margin: 0 auto; padding: 20px;
+         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         line-height: 1.6; }}
+  .medf-metadata {{ background: #f5f5f5; padding: 15px; border-radius: 5px;
+                    margin-bottom: 20px; font-size: 0.9em; }}
+  .medf-metadata dt {{ font-weight: bold; margin-top: 10px; }}
+  .medf-metadata dd {{ margin-left: 0; word-break: break-all; }}
+  .block-hash {{ color: #888; font-size: 0.8em; word-break: break-all; }}
+  code {{ background: #f0f0f0; padding: 2px 6px; border-radius: 3px; }}
+  pre {{ background: #f0f0f0; padding: 15px; border-radius: 5px; overflow-x: auto; }}
+  blockquote {{ border-left: 4px solid #ddd; padding-left: 15px; margin-left: 0; color: #666; }}
+</style>
+</head>
+<body>
+<dl class="medf-metadata">
+  <dt>Document ID</dt><dd>{title}</dd>
+  <dt>MEDF Version</dt><dd>{_html.escape(str(doc.get("medf_version", "")))}</dd>
+  <dt>Snapshot</dt><dd>{_html.escape(str(doc.get("snapshot", "")))}</dd>
+  <dt>Issuer</dt><dd>{_html.escape(str(doc.get("issuer", "")))}</dd>
+  <dt>Document Hash</dt><dd>{_html.escape(str(doc_hash))}</dd>
+</dl>
+<main>
+{"\n".join(sections)}
+</main>
+</body>
+</html>"""
+
+    output_path.write_text(page, encoding="utf-8")
+    print(f"[OK] HTML rendered: {output_path}")
+    print(f"  Blocks: {len(doc.get('blocks', []))}")
+
+
+
+
 def print_usage():
     """Print usage information"""
     print("medf — A CLI tool to package, hash, sign, and verify documents")
@@ -586,7 +819,10 @@ def print_usage():
     print("COMMANDS:")
     print("  init        Initialize a MEDF document skeleton")
     print("  import      Import a Markdown file to MEDF format")
+    print("  convert     Alias of import (legacy cli/ command name)")
     print("  pack        Generate hashes for blocks and the document")
+    print("  validate    Check document structure (no integrity check)")
+    print("  to-html     Render a MEDF document as a standalone HTML page")
     print("  diff        Diff two MEDF documents at block level")
     print("  sign        Attach a cryptographic signature to the document hash")
     print("  verify      Verify hashes and signatures")
@@ -622,6 +858,8 @@ def print_usage():
     print("  medf verify document.medf.json --json")
     print("  medf sign document.medf.json --key private.key")
     print("  medf explain")
+    print("  medf validate document.medf.json")
+    print("  medf to-html document.medf.json document.html")
     print()
     print("For more information:")
     print("  https://github.com/maskin/medf")
@@ -648,7 +886,7 @@ def main():
 
     if cmd == "init":
         cmd_init()
-    elif cmd == "import":
+    elif cmd in ("import", "convert"):
         if len(sys.argv) < 3:
             print("usage: medf import <markdown.md> [--type <document-type>] [--no-pack]")
             return
@@ -709,6 +947,25 @@ def main():
         cmd_sign(path, key_path)
     elif cmd == "explain":
         cmd_explain()
+    elif cmd == "validate":
+        if len(sys.argv) < 3:
+            print("usage: medf validate <document.medf>")
+            return
+        path = Path(sys.argv[2])
+        if not path.exists():
+            print(f"[Error] File not found: {path}")
+            return
+        cmd_validate(path)
+    elif cmd == "to-html":
+        if len(sys.argv) < 4:
+            print("usage: medf to-html <document.medf> <output.html>")
+            return
+        in_path = Path(sys.argv[2])
+        out_path = Path(sys.argv[3])
+        if not in_path.exists():
+            print(f"[Error] File not found: {in_path}")
+            return
+        cmd_to_html(in_path, out_path)
     elif cmd == "diff":
         if len(sys.argv) < 4:
             print("usage: medf diff <old.medf.json> <new.medf.json> [--json]")
