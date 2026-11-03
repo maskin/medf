@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "medf"
+version = "0.2.1"
+description = "MeDF (Mutable Expression Description Format) — verifiable documents with immutable text and flexible presentation"
+readme = "README.md"
+requires-python = ">=3.7"
+license = { text = "MIT" }
+
+[project.scripts]
+medf = "medf:main"
+
+[tool.setuptools]
+py-modules = ["medf"]

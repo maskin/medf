@@ -74,6 +74,10 @@ MeDF is not a system for preserving or distributing documents themselves. It is 
 git clone https://github.com/maskin/medf.git
 cd medf
 # No dependencies! Just Python 3.7+
+
+# Optional: install the `medf` command
+pip install .
+# then use `medf ...` instead of `python3 medf.py ...`
 ```
 
 ### 2. Create
