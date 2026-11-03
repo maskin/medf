@@ -66,24 +66,51 @@ MeDF is not a system for preserving or distributing documents themselves. It is 
 
 ---
 
-## Quick Start
+## Quick Start (5 minutes)
+
+### 1. Install
 
 ```bash
-# Initialize document
-python3 medf.py init > document.medf.json
+git clone https://github.com/maskin/medf.git
+cd medf
+# No dependencies! Just Python 3.7+
+```
 
-# Generate hashes
-python3 medf.py pack document.medf.json
+### 2. Create
 
-# Verify integrity
-python3 medf.py verify document.medf.json
+```bash
+python3 medf.py init > my-document.medf.json
+```
 
-# Sign (optional)
-python3 medf.py sign document.medf.json --key private.key
+### 3. Edit
+
+Open `my-document.medf.json` and modify the text blocks.
+
+### 4. Hash
+
+```bash
+python3 medf.py pack my-document.medf.json
+```
+
+### 5. Verify
+
+```bash
+python3 medf.py verify my-document.medf.json
+# ✓ Document verified successfully
 
 # Explain verification
 python3 medf.py explain
 ```
+
+### 6. Sign (optional)
+
+```bash
+python3 medf.py sign my-document.medf.json --key private.key
+```
+
+### 7. Share
+
+Share the `.medf.json` file anywhere — email, GitHub, or IPFS (see IPFS Compatibility below). Anyone can verify it offline.
 
 ---
 
@@ -259,6 +286,7 @@ Reference implementations may demonstrate practical trust anchors.
 - **Impersonation prevention**: Proving "same person" through key continuity
 - **Signing**: Claim of "I fixed this" (not trust)
 - **AI-generated documents**: Verifiable AI-assisted writing - see [docs/ai-generated-documents.md](docs/ai-generated-documents.en.md)
+- **AI agent action records & incident response**: Tamper-evident records of prompts, tool calls, decisions and outputs, verifiable by third parties offline - see [docs/ai-agent-incident-response.md](docs/ai-agent-incident-response.md)
 
 ---
 
